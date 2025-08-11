@@ -8,7 +8,6 @@ function App() {
 
   return (
     <>
-    <h1>Хуесос</h1>
       <div className="wrapper">
         {/* <!-- pop-up start--> */}
 
