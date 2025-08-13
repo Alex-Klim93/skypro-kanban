@@ -1,6 +1,14 @@
-// import "../App.css";
+import "../App.css";
+import { useState } from "react";
+import HeaderPopUserSet from "./HeaderPopUserSet.jsx";
 
 function Header() {
+  const [open, setOpen] = useState(false);
+
+  const handleUserClick = (e) => {
+    e.preventDefault();
+    setOpen(!open);
+  };
   return (
     <>
       <header className="header">
@@ -8,7 +16,7 @@ function Header() {
           <div className="header__block">
             <div className="header__logo _show _light">
               <a href="" target="_self">
-                <img src="../public/images/logo.png" alt="logo" />
+                <img src="images/logo.png" alt="logo" />
               </a>
             </div>
             <div className="header__logo _dark">
@@ -20,24 +28,11 @@ function Header() {
               <button className="header__btn-main-new _hover01" id="btnMainNew">
                 <a href="#popNewCard">Создать новую задачу</a>
               </button>
-              <a href="#user-set-target" className="header__user _hover02">
+              <a href="#user-set-target" className="header__user _hover02" onClick={handleUserClick}>
                 Ivan Ivanov
               </a>
-              <div
-                className="header__pop-user-set pop-user-set"
-                id="user-set-target"
-              >
-                {/* <!-- <a href="">x</a> --> */}
-                <p className="pop-user-set__name">Ivan Ivanov</p>
-                <p className="pop-user-set__mail">ivan.ivanov@gmail.com</p>
-                <div className="pop-user-set__theme">
-                  <p>Темная тема</p>
-                  <input type="checkbox" className="checkbox" name="checkbox" />
-                </div>
-                <button type="button" className="_hover03">
-                  <a href="#popExit">Выйти</a>
-                </button>
-              </div>
+
+              <HeaderPopUserSet isOpen={open} />
             </nav>
           </div>
         </div>
