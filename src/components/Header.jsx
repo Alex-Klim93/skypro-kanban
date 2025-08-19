@@ -1,8 +1,14 @@
-import "../App.css";
 import { useState } from "react";
 import HeaderPopUserSet from "./HeaderPopUserSet.jsx";
-
-
+import { 
+  HeaderStyle, 
+  HeaderStyleContainer,
+  HeaderBlock,
+  HeaderLogo,
+  HeaderNav,
+  HeaderButton,
+  HeaderUser
+} from "./Header.style.js";
 
 function Header() {
   const [open, setOpen] = useState(false);
@@ -11,35 +17,33 @@ function Header() {
     e.preventDefault();
     setOpen(!open);
   };
-  return (
-    <>
-      <header className="header">
-        <div className="container">
-          <div className="header__block">
-            <div className="header__logo _show _light">
-              <a href="" target="_self">
-                <img src="images/logo.png" alt="logo" />
-              </a>
-            </div>
-            <div className="header__logo _dark">
-              <a href="" target="_self">
-                <img src="public/images/logo_dark.png" alt="logo" />
-              </a>
-            </div>
-            <nav className="header__nav">
-              <button className="header__btn-main-new _hover01" id="btnMainNew">
-                <a href="#popNewCard">Создать новую задачу</a>
-              </button>
-              <a href="#user-set-target" className="header__user _hover02" onClick={handleUserClick}>
-                Ivan Ivanov
-              </a>
 
-              <HeaderPopUserSet isOpen={open} />
-            </nav>
-          </div>
-        </div>
-      </header>
-    </>
+  return (
+    <HeaderStyle>
+      <HeaderStyleContainer>
+        <HeaderBlock>
+          <HeaderLogo className="_show _light">
+            <a href="" target="_self">
+              <img src="images/logo.png" alt="logo" />
+            </a>
+          </HeaderLogo>
+          <HeaderLogo className="_dark">
+            <a href="" target="_self">
+              <img src="images/logo_dark.png" alt="logo" />
+            </a>
+          </HeaderLogo>
+          <HeaderNav>
+            <HeaderButton className="_hover01" id="btnMainNew">
+              <a href="#popNewCard">Создать новую задачу</a>
+            </HeaderButton>
+            <HeaderUser onClick={handleUserClick}>
+              Ivan Ivanov
+            </HeaderUser>
+            <HeaderPopUserSet isOpen={open} />
+          </HeaderNav>
+        </HeaderBlock>
+      </HeaderStyleContainer>
+    </HeaderStyle>
   );
 }
 

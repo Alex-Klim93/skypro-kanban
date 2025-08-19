@@ -1,28 +1,71 @@
 import React from "react";
-import "../App.css";
+import {
+  CardsItemContainer,
+  Card,
+  CardGroup,
+  CardTheme,
+  CardThemeText,
+  CardButton,
+  CardButtonInner,
+  CardButtonDot,
+  CardContent,
+  CardTitleLink,
+  CardTitle,
+  CardDate,
+  CalendarIcon,
+  DateText,
+} from "./CardsItem.style";
 
+/**
+ * Компонент карточки задачи
+ * Отображает отдельную задачу с темой, заголовком и датой
+ * Включает кнопку действий для открытия подробной информации
+ *
+ * @param {Object} props - Свойства компонента
+ * @param {Object} props.card - Объект с данными карточки
+ * @param {string} props.card.id - Уникальный идентификатор карточки
+ * @param {string} props.card.topic - Тема/категория карточки
+ * @param {string} props.card.themeClass - CSS класс для стилизации темы
+ * @param {string} props.card.title - Заголовок задачи
+ * @param {string} props.card.date - Дата выполнения задачи
+ * @returns {JSX.Element} Карточка задачи
+ */
 const CardsItem = ({ card }) => {
   return (
-    <div className="cards__item">
-      <div className="cards__card card">
-        <div className="card__group">
-          <div className={`card__theme ${card.themeClass}`}>
-            <p className={card.themeClass}>{card.topic}</p>
-          </div>
-          <a href="#popBrowse" target="_self">
-            <div className="card__btn">
-              <div></div>
-              <div></div>
-              <div></div>
-            </div>
-          </a>
-        </div>
-        <div className="card__content">
-          <a href="" target="_blank">
-            <h3 className="card__title">{card.title}</h3>
-          </a>
-          <div className="card__date">
-            <svg
+    <CardsItemContainer className="cards__item">
+      <Card className="cards__card card">
+        {/* Верхняя группа: тема и кнопка действий */}
+        <CardGroup className="card__group">
+          {/* Бейдж темы/категории задачи */}
+          <CardTheme
+            className={`card__theme ${card.themeClass}`}
+            $themeClass={card.themeClass}
+          >
+            <CardThemeText className={card.themeClass}>
+              {card.topic}
+            </CardThemeText>
+          </CardTheme>
+
+          {/* Кнопка действий (троеточие) */}
+          <CardButton href="#popBrowse" target="_self">
+            <CardButtonInner className="card__btn">
+              <CardButtonDot></CardButtonDot>
+              <CardButtonDot></CardButtonDot>
+              <CardButtonDot></CardButtonDot>
+            </CardButtonInner>
+          </CardButton>
+        </CardGroup>
+
+        {/* Основное содержимое карточки */}
+        <CardContent className="card__content">
+          {/* Заголовок задачи как ссылка */}
+          <CardTitleLink href="" target="_blank">
+            <CardTitle className="card__title">{card.title}</CardTitle>
+          </CardTitleLink>
+
+          {/* Блок с датой выполнения */}
+          <CardDate className="card__date">
+            <CalendarIcon
               xmlns="http://www.w3.org/2000/svg"
               width="13"
               height="13"
@@ -49,12 +92,12 @@ const CardsItem = ({ card }) => {
                   <rect width="13" height="13" fill="white" />
                 </clipPath>
               </defs>
-            </svg>
-            <p>{card.date}</p>
-          </div>
-        </div>
-      </div>
-    </div>
+            </CalendarIcon>
+            <DateText>{card.date}</DateText>
+          </CardDate>
+        </CardContent>
+      </Card>
+    </CardsItemContainer>
   );
 };
 

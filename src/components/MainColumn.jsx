@@ -1,11 +1,20 @@
-// import { useState } from "react";
-// import reactLogo from "./assets/react.svg";
-// import viteLogo from "/vite.svg";
 import { cardList } from "../data.js";
 import CardsItem from "./CardsItem.jsx";
-import "../App.css";
+import {
+  Column,
+  ColumnTitle,
+  CardsContainer
+} from "./MainColumn.style";
 
+/**
+ * Компонент колонок с задачами
+ * Отображает задачи, сгруппированные по статусам
+ * Каждая колонка представляет определенный этап выполнения
+ * 
+ * @returns {JSX.Element} Группа колонок с задачами
+ */
 function MainColumn() {
+  // Массив статусов для создания колонок
   const statusColumns = [
     "Без статуса",
     "Нужно сделать",
@@ -17,19 +26,23 @@ function MainColumn() {
   return (
     <>
       {statusColumns.map((status) => (
-        <div key={status} className="main__column column">
-          <div className="column__title">
+        <Column key={status} className="main__column column">
+          {/* Заголовок колонки с названием статуса */}
+          <ColumnTitle className="column__title">
             <p>{status}</p>
-          </div>
-          <div className="cards">
+          </ColumnTitle>
+          
+          {/* Контейнер для карточек текущего статуса */}
+          <CardsContainer className="cards">
             {cardList
               .filter((card) => card.status === status)
-              // .sort((a, b) => new Date(b.date) - new Date(a.date)) // Сортировка по дате (новые сверху) пока не работает
+              // TODO: Добавить сортировку по дате когда будет реализовано
+              // .sort((a, b) => new Date(b.date) - new Date(a.date))
               .map((card) => (
                 <CardsItem key={card.id} card={card} />
               ))}
-          </div>
-        </div>
+          </CardsContainer>
+        </Column>
       ))}
     </>
   );

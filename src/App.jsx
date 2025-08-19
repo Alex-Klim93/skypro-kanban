@@ -1,18 +1,22 @@
-// import { useState } from "react";
-// import reactLogo from "./assets/react.svg";
-// import viteLogo from "/vite.svg";
+import { useState } from "react";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "/vite.svg";
+import styled from "styled-components";
 import Header from "./components/Header.jsx";
 import Main from "./components/Main.jsx";
 import PopBrowse from "./components/PopBrowse.jsx";
 import PopExit from "./components/PopExit.jsx";
 import PopNewCard from "./components/PopNewCard.jsx";
-import "./App.css";
+import ContainerSignin from "./components/ContainerSignin.jsx";
+import SontainerSignup from "./components/ContainerSignup.jsx";
+import { GlobalStyle } from "./Global.style.js";
 
 function App() {
   // const [count, setCount] = useState(0);
 
   return (
     <>
+      <GlobalStyle />
       <div className="wrapper">
         {/* <!-- pop-up start--> */}
 
@@ -27,6 +31,10 @@ function App() {
         <Header />
 
         <Main />
+
+        <ContainerSignin />
+
+        <SontainerSignup />
       </div>
 
       {/* <div>
