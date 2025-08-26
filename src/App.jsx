@@ -2,13 +2,13 @@ import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import styled from "styled-components";
-import Header from "./components/Header.jsx";
-import Main from "./components/Main.jsx";
-import PopBrowse from "./components/PopBrowse.jsx";
-import PopExit from "./components/PopExit.jsx";
-import PopNewCard from "./components/PopNewCard.jsx";
-import ContainerSignin from "./components/ContainerSignin.jsx";
-import SontainerSignup from "./components/ContainerSignup.jsx";
+import Header from "./components/Header/Header.jsx";
+import Main from "./components/Main/Main.jsx";
+import PopBrowse from "./components/PopBrowse/PopBrowse.jsx";
+import PopExit from "./components/PopExit/PopExit.jsx";
+import PopNewCard from "./components/PopNewCard/PopNewCard.jsx";
+import ContainerSignin from "./components/ContainerSignin/ContainerSignin.jsx";
+import SontainerSignup from "./components/ContainerSignup/ContainerSignup.jsx";
 import { GlobalStyle } from "./Global.style.js";
 
 function App() {
