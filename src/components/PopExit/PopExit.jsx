@@ -12,7 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import useAuth from "../Hooks/useAuth";
 
-function PopExit() {
+function PopExit({ isOpenExit, onClose }) {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
@@ -22,11 +22,16 @@ function PopExit() {
   };
 
   const handleCancel = () => {
-    navigate(-1); // Возврат на предыдущую страницу
+    if (onClose) {
+      onClose(); // Закрываем попап
+    }
   };
 
+  // Если попап не открыт, не рендерим его
+  if (!isOpenExit) return null;
+
   return (
-    <PopExitContainer id="popExit">
+    <PopExitContainer isOpen={isOpenExit}>
       <PopExitWrapper>
         <PopExitBlock>
           <PopExitTitle>
@@ -35,7 +40,6 @@ function PopExit() {
 
           <PopExitForm id="formExit" action="#">
             <PopExitFormGroup>
-              {/* Меняем ссылки на вызовы функций */}
               <ExitYesButton type="button" id="exitYes" onClick={handleLogout}>
                 Да, выйти
               </ExitYesButton>

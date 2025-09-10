@@ -30,9 +30,23 @@ import {
  * @param {string} props.card.date - Дата выполнения задачи
  * @returns {JSX.Element} Карточка задачи
  */
-const CardsItem = ({ card }) => {
+const CardsItem = ({ card, onTaskClick }) => {
+  const handleCardClick = (e) => {
+    e.preventDefault();
+    if (onTaskClick) {
+      onTaskClick(card.id); // Вызываем функцию с ID задачи
+    }
+  };
+
+  const handleButtonClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation(); // Останавливаем всплытие, чтобы не срабатывал клик по карточке
+    if (onTaskClick) {
+      onTaskClick(card.id); // Вызываем функцию с ID задачи
+    }
+  };
   return (
-    <CardsItemContainer>
+    <CardsItemContainer onClick={handleCardClick} style={{ cursor: 'pointer' }}>
       <Card>
         {/* Верхняя группа: тема и кнопка действий */}
         <CardGroup>
@@ -47,7 +61,7 @@ const CardsItem = ({ card }) => {
           </CardTheme>
 
           {/* Кнопка действий (троеточие) */}
-          <CardButton href="#popBrowse" target="_self">
+          <CardButton href="#popBrowse" target="_self" onClick={handleButtonClick}>
             <CardButtonInner className="card__btn">
               <CardButtonDot></CardButtonDot>
               <CardButtonDot></CardButtonDot>
@@ -59,7 +73,7 @@ const CardsItem = ({ card }) => {
         {/* Основное содержимое карточки */}
         <CardContent>
           {/* Заголовок задачи как ссылка */}
-          <CardTitleLink href="" target="_blank">
+          <CardTitleLink href="" target="_blank" onClick={(e) => e.preventDefault()}>
             <CardTitle>{card.title}</CardTitle>
           </CardTitleLink>
 

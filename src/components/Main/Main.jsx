@@ -17,7 +17,7 @@ import { Column, ColumnTitle } from "../MainColumn/MainColumn.style.js";
  *
  * @returns {JSX.Element} Основной layout приложения
  */
-function Main() {
+function Main({ onTaskClick }) {
   // Состояние для управления индикатором загрузки
   const [isLoading, setIsLoading] = useState(true);
 
@@ -52,7 +52,7 @@ function Main() {
             ) : (
               // Отображение основного контента после загрузки
               <MainContent>
-                <MainColumn/>
+                <MainColumn onTaskClick={onTaskClick}/>
               </MainContent>
             )}
           </MainBlock>

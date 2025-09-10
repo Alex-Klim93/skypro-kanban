@@ -2,7 +2,8 @@ import styled from "styled-components";
 
 // Основной контейнер попапа
 export const PopBrowseContainer = styled.div`
-  display: none;
+  display: ${(props) =>
+    props.isOpen ? "block" : "none"}; // Изменяем на управление через пропсы
   width: 100%;
   height: 100%;
   min-width: 375px;
@@ -11,10 +12,18 @@ export const PopBrowseContainer = styled.div`
   top: 0;
   left: 0;
   z-index: 7;
+`;
 
-  /* Отображение при наличии target */
-  &:target {
-    display: block;
+// Добавьте этот стиль
+export const ActiveStatus = styled.div`
+  display: block !important;
+  background-color: #94a6be;
+  color: #ffffff;
+  border-radius: 24px;
+  padding: 6px 12px;
+
+  p {
+    color: #ffffff;
   }
 `;
 
@@ -292,6 +301,10 @@ export const HideElement = styled.div`
 `;
 
 export const OrangeTheme = styled.div`
+  width: auto;
+  height: 20px;
+  padding: 5px 14px;
+  border-radius: 18px;
   background-color: #ffe4c2;
   color: #ff6d00;
 `;

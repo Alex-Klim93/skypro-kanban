@@ -3,7 +3,6 @@ import { GlobalStyle } from "./Global.style.js";
 import MainPage from "./pages/MainPage/MainPage.jsx";
 import ContainerSignin from "./pages/ContainerSignin/ContainerSignin.jsx";
 import ContainerSignup from "./pages/ContainerSignup/ContainerSignup.jsx";
-import AddTaskPage from "./pages/AddTaskPage/AddTaskPage.jsx";
 import EditTaskPage from "./pages/EditTaskPage/EditTaskPage.jsx";
 import ViewTaskPage from "./pages/ViewTaskPage/ViewTaskPage.jsx";
 import ExitPage from "./pages/ExitPage/ExitPage.jsx";
@@ -30,14 +29,6 @@ function App() {
           }
         />
         <Route
-          path="/add-task"
-          element={
-            <ProtectedRoute>
-              <AddTaskPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/edit-task/:id"
           element={
             <ProtectedRoute>
@@ -53,24 +44,10 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/exit"
-          element={
-            <ProtectedRoute>
-              <ExitPage />
-            </ProtectedRoute>
-          }
-        />
 
         {/* Redirects for old modal URLs */}
-        <Route
-          path="/modal/signin.html"
-          element={<Navigate to="/sign-in" replace />}
-        />
-        <Route
-          path="/modal/signup.html"
-          element={<Navigate to="/sign-up" replace />}
-        />
+        <Route path="/sign-in" element={<ContainerSignin />} />
+        <Route path="/sign-up" element={<ContainerSignup />} />
 
         {/* 404 page */}
         <Route path="*" element={<NotFoundPage />} />

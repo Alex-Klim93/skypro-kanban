@@ -9,7 +9,7 @@ import { Column, ColumnTitle, CardsContainer } from "./MainColumn.style.js";
  *
  * @returns {JSX.Element} Группа колонок с задачами
  */
-function MainColumn() {
+function MainColumn({ onTaskClick }) {
   // Массив статусов для создания колонок
   const statusColumns = [
     "Без статуса",
@@ -35,7 +35,11 @@ function MainColumn() {
               // TODO: Добавить сортировку по дате когда будет реализовано
               // .sort((a, b) => new Date(b.date) - new Date(a.date))
               .map((card) => (
-                <CardsItem key={card.id} card={card} />
+                <CardsItem 
+                  key={card.id} 
+                  card={card} 
+                  onTaskClick={() => onTaskClick(card.id)} // Передаем функцию в CardsItem
+                />
               ))}
           </CardsContainer>
         </Column>

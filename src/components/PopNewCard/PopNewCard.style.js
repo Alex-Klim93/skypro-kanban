@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 // Основной контейнер всплывающего окна
 export const PopNewCardContainer = styled.div`
-  display: none;
+  
   width: 100%;
   min-width: 375px;
   height: 100%;

@@ -1,5 +1,6 @@
-import React from "react";
-import { useNavigate, useParams } from "react-router-dom"; // Добавляем импорты
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { cardList } from "../../data.js";
 import {
   PopBrowseContainer,
   PopBrowseInner,
@@ -21,34 +22,90 @@ import {
   OrangeTheme,
   GrayTheme,
   ActiveCategory,
+  ActiveStatus,
 } from "./PopBrowse.style";
 
-function PopBrowse({ isViewMode = false }) {
+function PopBrowse({ isOpen, onClose, cardId }) {
   const navigate = useNavigate();
-  const { id } = useParams(); // Получаем ID задачи из URL
+  const [searchParams] = useSearchParams();
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Получаем ID задачи из URL параметров
+  const urlTaskId = searchParams.get("task");
+
+  // Используем ID из пропсов или из URL параметров
+  const actualCardId = cardId || urlTaskId;
+
+  // Находим карточку по ID
+  const card = cardList.find((item) => item.id === parseInt(actualCardId));
+
+  useEffect(() => {
+    setIsMounted(true);
+
+    // Если карточка не найдена и попап открыт, закрываем его после монтирования
+    if (!card && isOpen && isMounted) {
+      console.error("Карточка не найдена с ID:", actualCardId);
+      if (onClose) {
+        onClose();
+      }
+    }
+  }, [card, isOpen, isMounted, onClose, actualCardId]);
 
   const handleClose = () => {
-    navigate(-1); // Возврат на предыдущую страницу
+    if (onClose) {
+      onClose();
+    } else {
+      navigate(-1);
+    }
   };
 
   const handleEdit = () => {
-    navigate(`/edit-task/${id}`); // Переход на страницу редактирования
+    navigate(`/edit-task/${actualCardId}`);
+    if (onClose) {
+      onClose();
+    }
   };
 
   const handleDelete = () => {
     // Логика удаления задачи
-    navigate(-1); // Возврат после удаления
+    if (onClose) {
+      onClose();
+    } else {
+      navigate(-1);
+    }
   };
+
+  // Если попап не открыт или не смонтирован, не рендерим его
+  if (!isOpen || !isMounted) return null;
+
+  // Если карточка не найдена, но попап открыт, показываем сообщение об ошибке
+  if (!card) {
+    return (
+      <PopBrowseContainer isOpen={isOpen} id="popBrowse">
+        <PopBrowseInner>
+          <PopBrowseBlock>
+            <PopBrowseContent>
+              <PopBrowseTitle>Ошибка</PopBrowseTitle>
+              <p>Задача не найдена</p>
+              <button onClick={handleClose}>Закрыть</button>
+            </PopBrowseContent>
+          </PopBrowseBlock>
+        </PopBrowseInner>
+      </PopBrowseContainer>
+    );
+  }
+
   return (
-    <PopBrowseContainer id="popBrowse">
+    <PopBrowseContainer isOpen={isOpen} id="popBrowse">
       <PopBrowseInner>
         <PopBrowseBlock>
           <PopBrowseContent>
             {/* Верхний блок с заголовком и категорией */}
             <PopBrowseTopBlock>
-              <PopBrowseTitle>Название задачи</PopBrowseTitle>
-              <OrangeTheme className="categories__theme theme-top _active-category">
-                <p>Web Design</p>
+              <PopBrowseTitle>{card.title}</PopBrowseTitle>
+              <OrangeTheme className={`card__theme ${card.themeClass}`}
+                $themeClass={card.themeClass}>
+                <p>{card.topic}</p>
               </OrangeTheme>
             </PopBrowseTopBlock>
 
@@ -56,19 +113,29 @@ function PopBrowse({ isViewMode = false }) {
             <StatusBlock className="pop-browse__status status">
               <StatusParagraph className="subttl">Статус</StatusParagraph>
               <StatusThemes>
-                <HideElement>
+                <HideElement
+                  className={card.status === "Без статуса" ? "active" : ""}
+                >
                   <p>Без статуса</p>
                 </HideElement>
-                <GrayTheme>
+                <GrayTheme
+                  className={card.status === "Нужно сделать" ? "active" : ""}
+                >
                   <p>Нужно сделать</p>
                 </GrayTheme>
-                <HideElement>
+                <HideElement
+                  className={card.status === "В работе" ? "active" : ""}
+                >
                   <p>В работе</p>
                 </HideElement>
-                <HideElement>
+                <HideElement
+                  className={card.status === "Тестирование" ? "active" : ""}
+                >
                   <p>Тестирование</p>
                 </HideElement>
-                <HideElement>
+                <HideElement
+                  className={card.status === "Готово" ? "active" : ""}
+                >
                   <p>Готово</p>
                 </HideElement>
               </StatusThemes>
@@ -87,6 +154,7 @@ function PopBrowse({ isViewMode = false }) {
                     id="textArea01"
                     readOnly
                     placeholder="Введите описание задачи..."
+                    value={`Описание задачи для "${card.title}". Категория: ${card.topic}, Статус: ${card.status}, Дата: ${card.date}`}
                   />
                 </FormBrowseBlock>
               </PopBrowseForm>
@@ -95,7 +163,12 @@ function PopBrowse({ isViewMode = false }) {
                 <p className="calendar__ttl subttl">Даты</p>
                 <div className="calendar__block">
                   <div className="calendar__nav">
-                    <div className="calendar__month">Сентябрь 2023</div>
+                    <div className="calendar__month">
+                      {new Date().toLocaleString("ru-RU", {
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </div>
                     <div className="nav__actions">
                       <div className="nav__action" data-action="prev">
                         <svg
@@ -126,7 +199,7 @@ function PopBrowse({ isViewMode = false }) {
                   <div className="calendar__period">
                     <p className="calendar__p date-end">
                       Срок исполнения:{" "}
-                      <span className="date-control">09.09.23</span>
+                      <span className="date-control">{card.date}</span>
                     </p>
                   </div>
                 </div>
@@ -137,7 +210,7 @@ function PopBrowse({ isViewMode = false }) {
             <div className="theme-down__categories theme-down">
               <p className="categories__p subttl">Категория</p>
               <OrangeTheme className="categories__theme _active-category">
-                <p>Web Design</p>
+                <p>{card.topic}</p>
               </OrangeTheme>
             </div>
 

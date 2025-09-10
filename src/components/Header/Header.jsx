@@ -12,26 +12,20 @@ import {
 import { useNavigate } from "react-router-dom";
 import useAuth from "../Hooks/useAuth";
 
-function Header() {
-  const [open, setOpen] = useState(false); // Добавляем состояние для попапа
+function Header({ onExitClick, onAddTaskClick }) {
+  // Добавляем пропс onAddTaskClick
+  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const { logout } = useAuth();
 
   const handleUserClick = () => {
-    setOpen(!open); // Переключаем видимость попапа пользователя
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate("/sign-in");
-  };
-
-  const handleExitClick = () => {
-    navigate("/exit");
+    setOpen(!open);
   };
 
   const handleAddTask = () => {
-    navigate("/add-task"); // Переход на страницу добавления задачи
+    if (onAddTaskClick) {
+      onAddTaskClick(); // Вызываем функцию открытия попапа вместо навигации
+    }
   };
 
   return (
@@ -49,21 +43,15 @@ function Header() {
             </a>
           </HeaderLogo>
           <HeaderNav>
-            {/* Меняем ссылку на вызов функции */}
             <HeaderButton
               className="_hover01"
               id="btnMainNew"
-              onClick={handleAddTask}
+              onClick={handleAddTask} // Используем новую функцию
             >
               Создать новую задачу
             </HeaderButton>
             <HeaderUser onClick={handleUserClick}>Ivan Ivanov</HeaderUser>
-            {/* Передаем функции в попап пользователя */}
-            <HeaderPopUserSet
-              isOpen={open}
-              onLogout={handleLogout}
-              onExit={handleExitClick}
-            />
+            <HeaderPopUserSet isOpen={open} onExitClick={onExitClick} />
           </HeaderNav>
         </HeaderBlock>
       </HeaderStyleContainer>
