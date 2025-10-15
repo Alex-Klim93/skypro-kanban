@@ -1,4 +1,5 @@
-import React from "react";
+// CardsItem.jsx
+import React, { useState } from "react";
 import {
   CardsItemContainer,
   Card,
@@ -16,41 +17,50 @@ import {
   DateText,
 } from "./CardsItem.style";
 
-/**
- * Компонент карточки задачи
- * Отображает отдельную задачу с темой, заголовком и датой
- * Включает кнопку действий для открытия подробной информации
- *
- * @param {Object} props - Свойства компонента
- * @param {Object} props.card - Объект с данными карточки
- * @param {string} props.card.id - Уникальный идентификатор карточки
- * @param {string} props.card.topic - Тема/категория карточки
- * @param {string} props.card.themeClass - CSS класс для стилизации темы
- * @param {string} props.card.title - Заголовок задачи
- * @param {string} props.card.date - Дата выполнения задачи
- * @returns {JSX.Element} Карточка задачи
- */
 const CardsItem = ({ card, onTaskClick }) => {
+  const [isDragging, setIsDragging] = useState(false);
+
   const handleCardClick = (e) => {
     e.preventDefault();
-    if (onTaskClick) {
-      onTaskClick(card.id); // Вызываем функцию с ID задачи
+    if (onTaskClick && !isDragging) {
+      onTaskClick(card.id);
     }
   };
 
   const handleButtonClick = (e) => {
     e.preventDefault();
-    e.stopPropagation(); // Останавливаем всплытие, чтобы не срабатывал клик по карточке
+    e.stopPropagation();
     if (onTaskClick) {
-      onTaskClick(card.id); // Вызываем функцию с ID задачи
+      onTaskClick(card.id);
     }
   };
+
+  const handleDragStart = (e) => {
+    setIsDragging(true);
+    e.dataTransfer.setData("text/plain", card.id);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
   return (
-    <CardsItemContainer onClick={handleCardClick} style={{ cursor: 'pointer' }}>
+    <CardsItemContainer
+      onClick={handleCardClick}
+      style={{
+        cursor: isDragging ? "grabbing" : "grab",
+        opacity: isDragging ? 0.6 : 1,
+        transform: isDragging ? "rotate(2deg) scale(1.02)" : "none",
+        transition: "all 0.2s ease",
+        boxShadow: isDragging ? "0 4px 15px rgba(0,0,0,0.2)" : "none",
+      }}
+      draggable
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
       <Card>
-        {/* Верхняя группа: тема и кнопка действий */}
         <CardGroup>
-          {/* Бейдж темы/категории задачи */}
           <CardTheme
             className={`card__theme ${card.themeClass}`}
             $themeClass={card.themeClass}
@@ -60,8 +70,11 @@ const CardsItem = ({ card, onTaskClick }) => {
             </CardThemeText>
           </CardTheme>
 
-          {/* Кнопка действий (троеточие) */}
-          <CardButton href="#popBrowse" target="_self" onClick={handleButtonClick}>
+          <CardButton
+            href="#popBrowse"
+            target="_self"
+            onClick={handleButtonClick}
+          >
             <CardButtonInner className="card__btn">
               <CardButtonDot></CardButtonDot>
               <CardButtonDot></CardButtonDot>
@@ -70,14 +83,15 @@ const CardsItem = ({ card, onTaskClick }) => {
           </CardButton>
         </CardGroup>
 
-        {/* Основное содержимое карточки */}
         <CardContent>
-          {/* Заголовок задачи как ссылка */}
-          <CardTitleLink href="" target="_blank" onClick={(e) => e.preventDefault()}>
+          <CardTitleLink
+            href=""
+            target="_blank"
+            onClick={(e) => e.preventDefault()}
+          >
             <CardTitle>{card.title}</CardTitle>
           </CardTitleLink>
 
-          {/* Блок с датой выполнения */}
           <CardDate>
             <CalendarIcon
               xmlns="http://www.w3.org/2000/svg"
@@ -107,7 +121,8 @@ const CardsItem = ({ card, onTaskClick }) => {
                 </clipPath>
               </defs>
             </CalendarIcon>
-            <DateText>{card.date}</DateText>
+            {/* Используем formattedDate для отображения */}
+            <DateText>{card.formattedDate || card.date}</DateText>
           </CardDate>
         </CardContent>
       </Card>

@@ -1,3 +1,4 @@
+// PopBrowse.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { cardList } from "../../data.js";
@@ -29,6 +30,7 @@ function PopBrowse({ isOpen, onClose, cardId }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isMounted, setIsMounted] = useState(false);
+  const [currentCard, setCurrentCard] = useState(null);
 
   // Получаем ID задачи из URL параметров
   const urlTaskId = searchParams.get("task");
@@ -36,11 +38,14 @@ function PopBrowse({ isOpen, onClose, cardId }) {
   // Используем ID из пропсов или из URL параметров
   const actualCardId = cardId || urlTaskId;
 
-  // Находим карточку по ID
-  const card = cardList.find((item) => item.id === parseInt(actualCardId));
-
   useEffect(() => {
     setIsMounted(true);
+
+    // Находим карточку по ID в актуальном списке
+    const card = cardList.find(
+      (item) => item.id === actualCardId || item._id === actualCardId
+    );
+    setCurrentCard(card);
 
     // Если карточка не найдена и попап открыт, закрываем его после монтирования
     if (!card && isOpen && isMounted) {
@@ -49,7 +54,7 @@ function PopBrowse({ isOpen, onClose, cardId }) {
         onClose();
       }
     }
-  }, [card, isOpen, isMounted, onClose, actualCardId]);
+  }, [actualCardId, isOpen, isMounted, onClose]);
 
   const handleClose = () => {
     if (onClose) {
@@ -68,6 +73,8 @@ function PopBrowse({ isOpen, onClose, cardId }) {
 
   const handleDelete = () => {
     // Логика удаления задачи
+    console.log("Удаление задачи:", actualCardId);
+    // TODO: Реализовать вызов API для удаления
     if (onClose) {
       onClose();
     } else {
@@ -79,7 +86,7 @@ function PopBrowse({ isOpen, onClose, cardId }) {
   if (!isOpen || !isMounted) return null;
 
   // Если карточка не найдена, но попап открыт, показываем сообщение об ошибке
-  if (!card) {
+  if (!currentCard) {
     return (
       <PopBrowseContainer isOpen={isOpen} id="popBrowse">
         <PopBrowseInner>
@@ -102,10 +109,12 @@ function PopBrowse({ isOpen, onClose, cardId }) {
           <PopBrowseContent>
             {/* Верхний блок с заголовком и категорией */}
             <PopBrowseTopBlock>
-              <PopBrowseTitle>{card.title}</PopBrowseTitle>
-              <OrangeTheme className={`card__theme ${card.themeClass}`}
-                $themeClass={card.themeClass}>
-                <p>{card.topic}</p>
+              <PopBrowseTitle>{currentCard.title}</PopBrowseTitle>
+              <OrangeTheme
+                className={`card__theme ${currentCard.themeClass}`}
+                $themeClass={currentCard.themeClass}
+              >
+                <p>{currentCard.topic}</p>
               </OrangeTheme>
             </PopBrowseTopBlock>
 
@@ -114,27 +123,33 @@ function PopBrowse({ isOpen, onClose, cardId }) {
               <StatusParagraph className="subttl">Статус</StatusParagraph>
               <StatusThemes>
                 <HideElement
-                  className={card.status === "Без статуса" ? "active" : ""}
+                  className={
+                    currentCard.status === "Без статуса" ? "active" : ""
+                  }
                 >
                   <p>Без статуса</p>
                 </HideElement>
                 <GrayTheme
-                  className={card.status === "Нужно сделать" ? "active" : ""}
+                  className={
+                    currentCard.status === "Нужно сделать" ? "active" : ""
+                  }
                 >
                   <p>Нужно сделать</p>
                 </GrayTheme>
                 <HideElement
-                  className={card.status === "В работе" ? "active" : ""}
+                  className={currentCard.status === "В работе" ? "active" : ""}
                 >
                   <p>В работе</p>
                 </HideElement>
                 <HideElement
-                  className={card.status === "Тестирование" ? "active" : ""}
+                  className={
+                    currentCard.status === "Тестирование" ? "active" : ""
+                  }
                 >
                   <p>Тестирование</p>
                 </HideElement>
                 <HideElement
-                  className={card.status === "Готово" ? "active" : ""}
+                  className={currentCard.status === "Готово" ? "active" : ""}
                 >
                   <p>Готово</p>
                 </HideElement>
@@ -154,7 +169,10 @@ function PopBrowse({ isOpen, onClose, cardId }) {
                     id="textArea01"
                     readOnly
                     placeholder="Введите описание задачи..."
-                    value={`Описание задачи для "${card.title}". Категория: ${card.topic}, Статус: ${card.status}, Дата: ${card.date}`}
+                    value={
+                      currentCard.description ||
+                      `Описание задачи для "${currentCard.title}". Категория: ${currentCard.topic}, Статус: ${currentCard.status}, Дата: ${currentCard.date}`
+                    }
                   />
                 </FormBrowseBlock>
               </PopBrowseForm>
@@ -199,7 +217,7 @@ function PopBrowse({ isOpen, onClose, cardId }) {
                   <div className="calendar__period">
                     <p className="calendar__p date-end">
                       Срок исполнения:{" "}
-                      <span className="date-control">{card.date}</span>
+                      <span className="date-control">{currentCard.date}</span>
                     </p>
                   </div>
                 </div>
@@ -210,7 +228,7 @@ function PopBrowse({ isOpen, onClose, cardId }) {
             <div className="theme-down__categories theme-down">
               <p className="categories__p subttl">Категория</p>
               <OrangeTheme className="categories__theme _active-category">
-                <p>{card.topic}</p>
+                <p>{currentCard.topic}</p>
               </OrangeTheme>
             </div>
 

@@ -10,28 +10,45 @@ import {
   ExitNoButton,
 } from "./PopExit.style";
 import { useNavigate } from "react-router-dom";
-import useAuth from "../Hooks/useAuth";
+import { api } from "../../api/api.js";
 
-function PopExit({ isOpenExit, onClose }) {
+function PopExit({ isOpenExit, onClose, onLogout }) {
   const navigate = useNavigate();
-  const { logout } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/sign-in");
+  const handleLogout = async () => {
+    try {
+      api.logout();
+
+      // ✅ ВЫЗЫВАЕМ ФУНКЦИЮ ИЗ APP.JSX
+      if (onLogout) {
+        onLogout();
+      }
+
+      navigate("/sign-in");
+
+      if (onClose) {
+        onClose();
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+      navigate("/sign-in");
+      if (onClose) {
+        onClose();
+      }
+    }
   };
 
   const handleCancel = () => {
     if (onClose) {
-      onClose(); // Закрываем попап
+      onClose();
     }
   };
 
-  // Если попап не открыт, не рендерим его
   if (!isOpenExit) return null;
 
   return (
-    <PopExitContainer isOpen={isOpenExit}>
+    // ✅ ИСПРАВЛЕНО: используем $isOpen вместо isOpen
+    <PopExitContainer $isOpen={isOpenExit}>
       <PopExitWrapper>
         <PopExitBlock>
           <PopExitTitle>

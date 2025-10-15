@@ -8,20 +8,43 @@ import {
   PopUserButton,
 } from "./HeaderPopUserSet.style";
 
+// ДОБАВЛЕНО: импорт данных пользователя из API
+import { currentUser } from "../../api/api.js";
+import { useState, useEffect } from "react";
+
 function HeaderPopUserSet({ isOpen, onExitClick }) {
   const { isDarkTheme, toggleTheme } = useThemeContext();
+  const [userName, setUserName] = useState("Пользователь");
+  const [userLogin, setUserLogin] = useState("логин");
+
+  // ✅ УПРОЩЕНО: получаем данные напрямую из currentUser
+  useEffect(() => {
+    console.log(
+      "🔄 Обновление данных пользователя в HeaderPopUserSet:",
+      currentUser
+    );
+
+    if (currentUser) {
+      if (currentUser.name) {
+        setUserName(currentUser.name);
+      }
+      if (currentUser.login) {
+        setUserLogin(currentUser.login);
+      }
+    }
+  }, [currentUser]); // ✅ Обновляем при изменении currentUser
 
   const handleExitClick = (e) => {
     e.preventDefault();
     if (onExitClick) {
-      onExitClick(); // Вызываем функцию открытия попапа выхода
+      onExitClick();
     }
   };
 
   return (
     <PopUserSetContainer id="user-set-target" $isOpen={isOpen}>
-      <PopUserName>Ivan Ivanov</PopUserName>
-      <PopUserMail>ivan.ivanov@gmail.com</PopUserMail>
+      <PopUserName>{userName}</PopUserName>
+      <PopUserMail>{userLogin}</PopUserMail>
 
       <PopUserTheme>
         <label style={{ cursor: "pointer", margin: 0, padding: 0 }}>
