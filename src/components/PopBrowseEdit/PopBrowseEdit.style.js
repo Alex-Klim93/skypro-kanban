@@ -172,6 +172,7 @@ export const StatusThemes = styled.div`
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: flex-start;
+  gap:7px;
 `;
 
 
@@ -226,7 +227,7 @@ export const BrowseButtons = styled.div`
 
 // Кнопки редактирования (скрыты по умолчанию)
 export const EditButtons = styled.div`
-  display: none;
+  display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
@@ -472,7 +473,23 @@ export const DatePickValue = styled.input`
 
 // Вспомогательные классы
 export const HideElement = styled.div`
-  display: none;
+  width: auto;
+  height: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 14px 10px 14px;
+  box-sizing: border-box;
+  border: 0.7px solid rgba(148, 166, 190, 0.4);
+  border-radius: 24px;
+
+  color: rgba(148, 166, 190, 1);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 10px;
+  letter-spacing: -1%;
+  text-align: center;
 `;
 
 export const OrangeTheme = styled.div`

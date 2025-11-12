@@ -1,5 +1,5 @@
 // CardsItem.jsx
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   CardsItemContainer,
   Card,
@@ -17,9 +17,15 @@ import {
   DateText,
 } from "./CardsItem.style";
 
-const CardsItem = ({ card, onTaskClick }) => {
+const CardsItem = ({ card, onTaskClick, isBeingDragged = false }) => {
   const [isDragging, setIsDragging] = useState(false);
+  // Состояние для отслеживания наведения курсора и удерживания ЛКМ
+  const [isHoveredWithLMB, setIsHoveredWithLMB] = useState(false);
 
+  // Референс для таймера (для оптимизации производительности)
+  const mouseDownTimerRef = useRef(null);
+
+  // Обработчик клика по карточке
   const handleCardClick = (e) => {
     e.preventDefault();
     if (onTaskClick && !isDragging) {
@@ -27,6 +33,7 @@ const CardsItem = ({ card, onTaskClick }) => {
     }
   };
 
+  // Обработчик клика по кнопке
   const handleButtonClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -35,25 +42,63 @@ const CardsItem = ({ card, onTaskClick }) => {
     }
   };
 
+  // Обработчик начала перетаскивания
   const handleDragStart = (e) => {
     setIsDragging(true);
     e.dataTransfer.setData("text/plain", card.id);
     e.dataTransfer.effectAllowed = "move";
   };
 
+  // Обработчик окончания перетаскивания
   const handleDragEnd = () => {
     setIsDragging(false);
+  };
+
+  // Обработчик наведения курсора на элемент
+  const handleMouseEnter = (e) => {
+    // Проверяем, нажата ли левая кнопка мыши (buttons === 1)
+    if (e.buttons === 1) {
+      setIsHoveredWithLMB(true);
+      // Здесь можно добавить дополнительную логику при наведении с зажатой ЛКМ
+      console.log("Курсор наведен и удерживается ЛКМ");
+    }
+  };
+
+  // Обработчик ухода курсора с элемента
+  const handleMouseLeave = () => {
+    setIsHoveredWithLMB(false);
+    console.log("Курсор наведен и удерживается ЛКМ");
+  };
+
+  // Обработчик нажатия кнопки мыши
+  const handleMouseDown = (e) => {
+    // Проверяем, что нажата именно левая кнопка мыши (button === 0)
+    if (e.button === 0) {
+      // Устанавливаем состояние, что ЛКМ нажата на этом элементе
+      setIsHoveredWithLMB(true);
+      console.log("ЛКМ нажата на карточке");
+    }
+  };
+
+  // Обработчик отпускания кнопки мыши
+  const handleMouseUp = () => {
+    setIsHoveredWithLMB(false);
   };
 
   return (
     <CardsItemContainer
       onClick={handleCardClick}
+      // Добавляем обработчики мыши
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
       style={{
         cursor: isDragging ? "grabbing" : "grab",
-        opacity: isDragging ? 0.6 : 1,
-        transform: isDragging ? "rotate(2deg) scale(1.02)" : "none",
-        transition: "all 0.2s ease",
-        boxShadow: isDragging ? "0 4px 15px rgba(0,0,0,0.2)" : "none",
+        // Убираем display: "none" - скрытие управляется из MainColumn
+        opacity: isBeingDragged ? 0 : 1,
+        visibility: isBeingDragged ? "hidden" : "visible",
+        transition: "opacity 0.2s ease",
       }}
       draggable
       onDragStart={handleDragStart}

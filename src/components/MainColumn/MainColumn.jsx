@@ -1,5 +1,5 @@
 // MainColumn.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import CardsItem from "../CardsItem/CardsItem.jsx";
 import { Column, ColumnTitle, CardsContainer } from "./MainColumn.style.js";
 import { api } from "../../api/api.js";
@@ -20,11 +20,11 @@ function MainColumn({
 
   const [draggedTask, setDraggedTask] = useState(null);
   const [dragOverColumn, setDragOverColumn] = useState(null);
-  const [localTasks, setLocalTasks] = useState(tasks);
+  const localTasks = useRef(tasks);
 
   // Синхронизируем локальные задачи с props
   useEffect(() => {
-    setLocalTasks(tasks);
+    localTasks.current = tasks;
   }, [tasks]);
 
   const handleDragStart = (e, task) => {
@@ -68,12 +68,6 @@ function MainColumn({
         `🔄 Перенос задачи "${draggedTask.title}" из "${draggedTask.status}" в "${newStatus}"`
       );
 
-      // ✅ Оптимистичное обновление UI
-      const updatedTasks = localTasks.map((task) =>
-        task.id === draggedTask.id ? { ...task, status: newStatus } : task
-      );
-      setLocalTasks(updatedTasks);
-
       const updatedTaskData = {
         title: draggedTask.title,
         topic: draggedTask.topic,
@@ -95,8 +89,6 @@ function MainColumn({
       }
     } catch (error) {
       console.error("❌ Ошибка обновления статуса задачи:", error);
-      // ✅ Откатываем оптимистичное обновление при ошибке
-      setLocalTasks(tasks);
       alert(`Не удалось переместить задачу: ${error.message}`);
     } finally {
       setDraggedTask(null);
@@ -104,7 +96,7 @@ function MainColumn({
   };
 
   // Используем локальные задачи для отображения
-  const displayTasks = localTasks;
+  const displayTasks = localTasks.current;
 
   if (!displayTasks || displayTasks.length === 0) {
     return (
@@ -121,6 +113,27 @@ function MainColumn({
     );
   }
 
+  const DropIndicator = () => {
+    return (
+      <div
+        style={{
+          width: "220px",
+          height: "130px",
+          backgroundColor: "none",
+          border: "2px dashed rgba(148, 166, 190, 1)",
+          borderRadius: "8px",
+          margin: "5px 0",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#94A6BE",
+          fontSize: "12px",
+          transition: "all 0.2s ease",
+        }}
+      ></div>
+    );
+  };
+
   return (
     <>
       {statusColumns.map((status) => {
@@ -128,6 +141,7 @@ function MainColumn({
           (task) => task.status === status
         );
         const isDragOver = dragOverColumn === status;
+        const isDragging = !!draggedTask;
 
         return (
           <Column
@@ -136,11 +150,8 @@ function MainColumn({
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, status)}
             style={{
-              backgroundColor: isDragOver ? "#f0f8ff" : "transparent",
-              border: isDragOver ? "2px dashed #565eef" : "none",
-              transition: "all 0.2s ease",
-              minHeight: "200px",
-              borderRadius: isDragOver ? "10px" : "0",
+              minWidth: "220px",
+              backgroundColor: "transparent",
             }}
           >
             <ColumnTitle>
@@ -153,31 +164,53 @@ function MainColumn({
             <CardsContainer>
               {columnTasks
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .map((task) => (
-                  <div
-                    key={task.id}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, task)}
-                    onDragEnd={() => setDraggedTask(null)}
-                    style={{
-                      opacity: draggedTask?.id === task.id ? 0.5 : 1,
-                      cursor: "grab",
-                      transition: "all 0.2s ease",
-                      transform:
-                        draggedTask?.id === task.id
-                          ? "scale(0.95)"
-                          : "scale(1)",
-                    }}
-                  >
-                    <CardsItem
-                      card={task}
-                      onTaskClick={() => onTaskClick(task.id)}
-                    />
-                  </div>
-                ))}
+                .map((task) => {
+                  // Скрываем перетаскиваемую карточку только в её исходной колонке
+                  const isBeingDragged =
+                    draggedTask?.id === task.id &&
+                    draggedTask?.status === status;
 
-              {columnTasks.length === 0 && (
+                  return (
+                    <div
+                      key={task.id}
+                      data-card
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, task)}
+                      onDragEnd={() => setDraggedTask(null)}
+                      style={{
+                        width: isBeingDragged ? "220px" : "",
+                        height: isBeingDragged ? "130px" : "",
+                        marginTop: isBeingDragged ? "6px" : "",
+                        marginBottom: isBeingDragged ? "6px" : "",
+                        backgroundColor: isBeingDragged ? "none" : "",
+                        border: isBeingDragged
+                          ? "2px dashed rgba(148, 166, 190, 1)"
+                          : "",
+                        borderRadius: isBeingDragged ? "8px" : "",
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      {/* Внутренний контейнер для карточки */}
+                      <div
+                        style={{
+                          opacity: isBeingDragged ? "0" : "1",
+                          transition: "opacity 0.2s ease",
+                        }}
+                      >
+                        <CardsItem
+                          card={task}
+                          onTaskClick={() => onTaskClick(task.id)}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              {/* Индикатор для вставки в конце ВСЕГДА при перетаскивании */}
+              {isDragging && <DropIndicator />}
+
+              {columnTasks.length === 0 && !isDragging && (
                 <div
+                  data-card
                   style={{
                     padding: "20px",
                     textAlign: "center",
@@ -187,12 +220,13 @@ function MainColumn({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    border: isDragOver ? "2px dashed #94A6BE" : "none",
+                    border: "none",
                     borderRadius: "8px",
                     margin: "5px",
+                    backgroundColor: "transparent",
                   }}
                 >
-                  {isDragOver ? "Отпустите чтобы переместить" : "Нет задач"}
+                  Нет задач
                 </div>
               )}
             </CardsContainer>
