@@ -227,17 +227,10 @@ function PopBrowseEdit({ isOpen, onClose, cardId, onTaskUpdated }) {
             {/* Верхний блок с заголовком и категорией */}
             <PopBrowseTopBlock>
               <PopBrowseTitle>
-                <input
+                <input className={"PopBrowseTitle"}
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  style={{
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                    padding: "8px",
-                    fontSize: "16px",
-                    width: "100%",
-                  }}
                 />
               </PopBrowseTitle>
               <OrangeTheme

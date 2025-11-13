@@ -22,19 +22,19 @@ export const Modal = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--bg-primary);
 `;
 
 export const ModalBlock = styled.div`
   display: block;
   margin: 0 auto;
-  background-color: #ffffff;
+  background-color: var(--bg-secondary);
   max-width: 370px;
   width: 100%;
   padding: 50px 60px;
   border-radius: 10px;
-  border: 0.7px solid #d4dbe5;
-  box-shadow: 0px 4px 67px -12px rgba(0, 0, 0, 0.13);
+  border: 0.7px solid var(--border-secondary);
+  box-shadow: var(--shadow-primary);
 `;
 
 export const ModalTitle = styled.div`
@@ -66,7 +66,7 @@ export const Input = styled.input`
   outline: none;
   padding: 14px;
   background: transparent;
-  border: 0.7px solid rgba(148, 166, 190, 0.4);
+  border: 0.7px solid var(--border-primary);
   border-radius: 8px;
   font-size: 14px;
   line-height: 1;
@@ -77,7 +77,7 @@ export const Input = styled.input`
     font-weight: 400;
     font-size: 14px;
     line-height: 1px;
-    color: #94a6be;
+    color: var(--accent-secondary);
     letter-spacing: -0.14px;
   }
 
@@ -89,7 +89,7 @@ export const Input = styled.input`
 export const Button = styled.button`
   width: 100%;
   height: 30px;
-  background-color: #565eef;
+  background-color: var(--accent-primary);
   border-radius: 4px;
   border: none;
   outline: none;
@@ -100,14 +100,14 @@ export const Button = styled.button`
   line-height: 21px;
   font-weight: 500;
   letter-spacing: -0.14px;
-  color: #ffffff;
+  color: var(--text-primary);
   margin-top: 20px;
   margin-bottom: 20px;
 
   a {
     width: 100%;
     height: 100%;
-    color: #ffffff;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -115,7 +115,7 @@ export const Button = styled.button`
   }
 
   &:hover {
-    background-color: #33399b;
+    background-color: var(--accent-hover);
   }
 `;
 
@@ -128,14 +128,14 @@ export const FormGroup = styled.div`
   gap: 5px;
 
   p {
-    color: #000;
+    color: var(--text-primary);
     font-size: 14px;
     line-height: 21px;
     letter-spacing: -0.14px;
   }
 
   a {
-    color: #565eef;
+    color: var(--text-accent);
     font-size: 14px;
     line-height: 21px;
     letter-spacing: -0.14px;
