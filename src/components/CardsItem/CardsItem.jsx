@@ -1,5 +1,6 @@
 // CardsItem.jsx
 import React, { useState, useRef } from "react";
+import { GlobalStyle } from "../../Global.style.js";
 import {
   CardsItemContainer,
   Card,
@@ -86,6 +87,8 @@ const CardsItem = ({ card, onTaskClick, isBeingDragged = false }) => {
   };
 
   return (
+    <>
+    <GlobalStyle />
     <CardsItemContainer
       onClick={handleCardClick}
       // Добавляем обработчики мыши
@@ -172,6 +175,7 @@ const CardsItem = ({ card, onTaskClick, isBeingDragged = false }) => {
         </CardContent>
       </Card>
     </CardsItemContainer>
+    </>
   );
 };
 

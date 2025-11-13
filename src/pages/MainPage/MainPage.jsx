@@ -1,131 +1,143 @@
-// MainPage.jsx
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, Outlet, useParams, useLocation } from "react-router-dom";
 import Header from "../../components/Header/Header.jsx";
 import Main from "../../components/Main/Main.jsx";
 import PopBrowse from "../../components/PopBrowse/PopBrowse.jsx";
-import PopBrowseEdit from "../../components/PopBrowseEdit/PopBrowseEdit.jsx"; // Добавляем импорт
+import PopBrowseEdit from "../../components/PopBrowseEdit/PopBrowseEdit.jsx";
 import PopExit from "../../components/PopExit/PopExit.jsx";
 import PopNewCard from "../../components/PopNewCard/PopNewCard.jsx";
+import HeaderPopUserSet from "../../components/HeaderPopUserSet/HeaderPopUserSet.jsx";
 
 function MainPage({ onLogout }) {
-  const [showExit, setShowExit] = useState(false);
-  const [showNewCard, setShowNewCard] = useState(false);
-  const [showBrowse, setShowBrowse] = useState(false);
-  const [showBrowseEdit, setShowBrowseEdit] = useState(false); // Новое состояние для редактирования
-  const [selectedCardId, setSelectedCardId] = useState(null);
-  const [selectedCard, setSelectedCard] = useState(null); // Новое состояние для хранения данных карточки
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const params = useParams();
 
-  useEffect(() => {
-    const taskId = searchParams.get("task");
-    if (taskId) {
-      setSelectedCardId(taskId);
-      setShowBrowse(true);
-    }
-  }, [searchParams]);
+  // Определяем, какое модальное окно открыто
+  const showExit = location.pathname === "/exit";
+  const showNewCard = location.pathname === "/new-task";
+  const showBrowse =
+    location.pathname.startsWith("/task/") &&
+    !location.pathname.includes("/edit");
+  const showBrowseEdit = location.pathname.includes("/edit");
+  const showUserSettings = location.pathname === "/user-settings";
 
-  // ✅ Функция для обновления списка задач
+  // ✅ Функция для обновления списка задач (только один запрос)
   const handleRefreshTasks = () => {
     setRefreshTrigger((prev) => prev + 1);
   };
 
   const handleOpenExit = () => {
-    setShowExit(true);
+    navigate("/exit");
   };
 
   const handleCloseExit = () => {
-    setShowExit(false);
+    navigate("/");
   };
 
   const handleOpenNewCard = () => {
-    setShowNewCard(true);
+    navigate("/new-task");
   };
 
   const handleCloseNewCard = () => {
-    setShowNewCard(false);
+    navigate("/");
+  };
+
+  const handleCloseUserSettings = () => {
+    navigate("/");
   };
 
   const handleTaskCreated = () => {
     console.log("✅ Задача создана, обновляем список");
     handleRefreshTasks();
+    handleCloseNewCard();
   };
 
   const handleOpenBrowse = (taskId) => {
-    setSelectedCardId(taskId);
-    setShowBrowse(true);
-    navigate(`/?task=${taskId}`, { replace: true });
+    navigate(`/task/${taskId}`);
   };
 
   const handleCloseBrowse = () => {
-    setShowBrowse(false);
-    setSelectedCardId(null);
-    setSelectedCard(null);
-    navigate("/", { replace: true });
+    navigate("/");
   };
 
-  // ✅ Функция для перехода в режим редактирования
   const handleEditTask = (card) => {
-    console.log("🔄 Переход в режим редактирования:", card);
-    setSelectedCard(card); // Сохраняем данные карточки
-    setShowBrowse(false); // Закрываем просмотр
-    setShowBrowseEdit(true); // Открываем редактирование
+    navigate(`/task/${card._id}/edit`);
   };
 
-  // ✅ Функция для закрытия редактирования
   const handleCloseBrowseEdit = () => {
-    setShowBrowseEdit(false);
-    setSelectedCard(null);
+    // Возвращаемся к просмотру задачи или закрываем полностью
+    if (params.id) {
+      navigate(`/task/${params.id}`);
+    } else {
+      navigate("/");
+    }
   };
 
-  // ✅ Функция для обработки успешного обновления задачи
   const handleTaskUpdated = () => {
     console.log("✅ Задача обновлена, обновляем список");
     handleRefreshTasks();
-    handleCloseBrowseEdit(); // Закрываем редактирование после сохранения
+    // Возвращаемся к просмотру задачи после редактирования
+    if (params.id) {
+      navigate(`/task/${params.id}`);
+    }
   };
 
   return (
     <>
-      <PopExit
-        isOpenExit={showExit}
-        onClose={handleCloseExit}
-        onLogout={onLogout}
-      />
+      {/* Модальные окна, которые рендерятся через роутинг */}
+      {showExit && (
+        <PopExit
+          isOpenExit={true}
+          onClose={handleCloseExit}
+          onLogout={onLogout}
+        />
+      )}
 
-      <PopNewCard
-        isOpen={showNewCard}
-        onClose={handleCloseNewCard}
-        onTaskCreated={handleTaskCreated}
-      />
+      {showNewCard && (
+        <PopNewCard
+          isOpen={true}
+          onClose={handleCloseNewCard}
+          onTaskCreated={handleTaskCreated}
+        />
+      )}
 
-      {/* Попап просмотра задачи */}
-      <PopBrowse
-        isOpen={showBrowse}
-        onClose={handleCloseBrowse}
-        cardId={selectedCardId}
-        setRefreshTrigger={setRefreshTrigger}
-        onEdit={handleEditTask} // Передаем функцию для редактирования
-      />
+      {showBrowse && params.id && (
+        <PopBrowse
+          isOpen={true}
+          onClose={handleCloseBrowse}
+          setRefreshTrigger={setRefreshTrigger}
+        />
+      )}
 
-      {/* Попап редактирования задачи */}
-      <PopBrowseEdit
-        isOpen={showBrowseEdit}
-        onClose={handleCloseBrowseEdit}
-        card={selectedCard}
-        setRefreshTrigger={setRefreshTrigger}
-        onTaskUpdated={handleTaskUpdated}
-      />
+      {showBrowseEdit && params.id && (
+        <PopBrowseEdit
+          isOpen={true}
+          onClose={handleCloseBrowseEdit}
+          setRefreshTrigger={setRefreshTrigger}
+          onTaskUpdated={handleTaskUpdated}
+        />
+      )}
 
+      {showUserSettings && (
+        <HeaderPopUserSet
+          isOpen={true}
+          onClose={handleCloseUserSettings}
+          onExitClick={handleOpenExit}
+        />
+      )}
+
+      {/* Основной контент */}
       <Header onExitClick={handleOpenExit} onAddTaskClick={handleOpenNewCard} />
-
       <Main
         onTaskClick={handleOpenBrowse}
         refreshTrigger={refreshTrigger}
         setRefreshTrigger={setRefreshTrigger}
       />
+
+      {/* Outlet для вложенных маршрутов */}
+      <Outlet />
     </>
   );
 }

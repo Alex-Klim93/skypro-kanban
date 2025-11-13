@@ -3,7 +3,7 @@ import styled from "styled-components";
 // Основной контейнер попапа
 export const PopBrowseContainer = styled.div`
   display: ${(props) =>
-    props.isOpen ? "block" : "none"}; // Изменяем на управление через пропсы
+    props.$isOpen ? "block" : "none"}; // Изменяем на управление через пропсы
   width: 100%;
   height: 100%;
   min-width: 375px;
@@ -17,13 +17,13 @@ export const PopBrowseContainer = styled.div`
 // Добавьте этот стиль
 export const ActiveStatus = styled.div`
   display: block !important;
-  background-color: #94a6be;
-  color: #ffffff;
+  background-color: var(--accent-secondary);
+  color: var(--bg-secondary);
   border-radius: 24px;
   padding: 6px 12px;
 
   p {
-    color: #ffffff;
+    color: var(--bg-secondary)f;
   }
 `;
 
@@ -37,19 +37,19 @@ export const PopBrowseInner = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--overlay);
 `;
 
 // Блок содержимого попапа
 export const PopBrowseBlock = styled.div`
   display: block;
   margin: 0 auto;
-  background-color: #ffffff;
+  background-color: var(--bg-secondary);
   max-width: 630px;
   width: 100%;
   padding: 40px 30px 38px;
   border-radius: 10px;
-  border: 0.7px solid #d4dbe5;
+  border: 0.7px solid var(--border-secondary);
   position: relative;
 `;
 
@@ -82,7 +82,7 @@ export const PopBrowseTopBlock = styled.div`
 
 // Заголовок попапа
 export const PopBrowseTitle = styled.h3`
-  color: #000;
+  color: var(--text-primary);
   font-size: 20px;
   font-weight: 600;
   line-height: 100%;
@@ -125,9 +125,9 @@ export const FormBrowseArea = styled.textarea`
   width: 100%;
   outline: none;
   padding: 14px;
-  color: rgba(148, 166, 190, 1);;
-  background: rgba(234, 238, 246, 1);
-  border: 0px solid rgba(148, 166, 190, 0.4);
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  border: 0px solid var(--border-primary);
   border-radius: 8px;
   font-size: 14px;
   line-height: 1;
@@ -140,7 +140,7 @@ export const FormBrowseArea = styled.textarea`
     font-weight: 400;
     font-size: 14px;
     line-height: 1px;
-    color: #94a6be;
+    color: var(--text-secondary);
     letter-spacing: -0.14px;
   }
 
@@ -158,7 +158,7 @@ export const StatusBlock = styled.div`
 // Параграф статуса
 export const StatusParagraph = styled.p`
   margin-bottom: 14px;
-  color: #000;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
   line-height: 100%;
@@ -174,15 +174,13 @@ export const StatusThemes = styled.div`
   justify-content: flex-start;
 `;
 
-
-
 // Тема статуса
 export const StatusTheme = styled.div`
   border-radius: 24px;
-  background: rgba(148, 166, 190, 1);
+  background: var(--border-primary);
 
   p {
-    color: rgba(255, 255, 255, 1);
+    color: var(--text-primary);
     font-size: 14px;
     font-weight: 400;
     line-height: 10px;
@@ -272,7 +270,7 @@ export const CalendarContainer = styled.div`
 
 // Заголовок календаря
 export const CalendarTitle = styled.p`
-  color: #000;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
   line-height: 1;
@@ -305,7 +303,7 @@ export const CalendarNav = styled.div`
 
 // Месяц календаря
 export const CalendarMonth = styled.div`
-  color: #94a6be;
+  color: var(--accent-secondary);
   font-size: 14px;
   line-height: 25px;
   font-weight: 600;
@@ -328,7 +326,7 @@ export const NavAction = styled.div`
   justify-content: center;
 
   svg {
-    fill: #94a6be;
+    fill: var(--accent-secondary);
   }
 `;
 
@@ -353,7 +351,7 @@ export const CalendarDaysNames = styled.div`
 
 // Имя дня недели
 export const CalendarDayName = styled.div`
-  color: #94a6be;
+  color: var(--accent-secondary);
   font-size: 10px;
   font-weight: 500;
   line-height: normal;
@@ -395,7 +393,7 @@ export const CalendarCell = styled.div`
   flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
-  color: #94a6be;
+  color: var(--accent-secondary);
   font-size: 10px;
   line-height: 1;
   letter-spacing: -0.2px;
@@ -409,8 +407,8 @@ export const CalendarCell = styled.div`
 
   /* Эффект при наведении */
   &:hover {
-    color: #94a6be;
-    background-color: #eaeef6;
+    color: var(--accent-secondary);
+    background-color: var(--bg-tertiary);
   }
 
   /* Стили для дней из других месяцев */
@@ -430,14 +428,14 @@ export const CalendarCell = styled.div`
 
   /* Стили для выбранного дня */
   &._selected {
-    background-color: #94a6be;
-    color: #ffffff;
+    background-color: var(--accent-secondary);
+    color: var(--text-primary);
   }
 
   /* Стили для активного дня */
   &._active-day {
-    background-color: #94a6be;
-    color: #ffffff;
+    background-color: var(--accent-secondary);
+    color: var(--text-primary);
   }
 `;
 
@@ -452,12 +450,12 @@ export const CalendarPeriod = styled.div`
 
 // Текст периода
 export const CalendarPeriodText = styled.p`
-  color: #94a6be;
+  color: var(--accent-secondary);
   font-size: 10px;
   line-height: 1;
 
   span {
-    color: #000000;
+    color: var(--text-primary);
   }
 
   @media screen and (max-width: 660px) {
@@ -480,8 +478,8 @@ export const OrangeTheme = styled.div`
   height: 30px;
   padding: 8px 20px;
   border-radius: 24px;
-  background-color: #ffe4c2;
-  color: #ff6d00;
+  background-color: var(--orange-bg);
+  color: var(--orange-text);
   font-size: 14px;
   font-weight: 600;
   line-height: 14.21px;
@@ -497,14 +495,14 @@ export const GrayTheme = styled.div`
   justify-content: center;
   align-items: center;
   padding: 10px 14px 10px 14px;
-  background: rgba(148, 166, 190, 1);
+  background: var(--accent-secondary);
   border-radius: 24px;
-    color: rgba(255, 255, 255, 1);
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 10px;
-    letter-spacing: 0%;
-    text-align: center;
+  color: #000000;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 10px;
+  letter-spacing: 0%;
+  text-align: center;
 `;
 
 export const ActiveCategory = styled.div`
