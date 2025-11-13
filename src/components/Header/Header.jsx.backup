@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react"; // ДОБАВИТЬ useContext
+import { useState, useEffect } from "react";
 import { GlobalStyle } from "../../Global.style.js";
 import HeaderPopUserSet from "../HeaderPopUserSet/HeaderPopUserSet.jsx";
 import {
@@ -15,8 +15,8 @@ import { useNavigate } from "react-router-dom";
 // ДОБАВЛЕНО: импорт контекста темы
 import { useThemeContext } from "../ThemeContext/ThemeContext.jsx";
 
-// ДОБАВЛЕНО: импорт AuthContext
-import { AuthContext } from "../../context/AuthContext";
+// ДОБАВЛЕНО: импорт данных пользователя из API
+// import { currentUser } from "../../api/api.js";
 
 function Header({ onExitClick, onAddTaskClick }) {
   const [open, setOpen] = useState(false);
@@ -26,24 +26,21 @@ function Header({ onExitClick, onAddTaskClick }) {
   // ДОБАВЛЕНО: получаем состояние темы
   const { isDarkTheme } = useThemeContext();
 
-  // ✅ ИСПРАВЛЕНО: получаем пользователя из AuthContext
-  const { user } = useContext(AuthContext);
-
-  // ✅ ИСПРАВЛЕНО: используем данные из AuthContext вместо currentUser
+  // ✅ УПРОЩЕНО: получаем имя напрямую из currentUser
   useEffect(() => {
-    console.log("🔄 Обновление данных пользователя в Header:", user);
+    console.log("🔄 Обновление данных пользователя в Header:", currentUser);
 
-    if (user && user.name) {
-      console.log("✅ Установлено имя пользователя:", user.name);
-      setUserDisplayName(user.name);
-    } else if (user && user.login) {
-      console.log("⚠️ Используем логин как имя:", user.login);
-      setUserDisplayName(user.login);
+    if (currentUser && currentUser.name) {
+      console.log("✅ Установлено имя пользователя:", currentUser.name);
+      setUserDisplayName(currentUser.name);
+    } else if (currentUser && currentUser.login) {
+      console.log("⚠️ Используем логин как имя:", currentUser.login);
+      setUserDisplayName(currentUser.login);
     } else {
       console.log("⚠️ Данные пользователя не найдены");
       setUserDisplayName("Пользователь");
     }
-  }, [user]); // ✅ Обновляем при изменении user из контекста
+  }, [currentUser]); // ✅ Обновляем при изменении currentUser
 
   const handleUserClick = () => {
     setOpen(!open);

@@ -1,4 +1,4 @@
-import { useState } from "react"; // Добавляем useState
+import { useState, useContext } from "react";
 import {
   Container,
   Modal,
@@ -9,22 +9,48 @@ import {
   Button,
   FormGroup,
 } from "./ContainerSignin.style.js";
-import { Link, useNavigate } from "react-router-dom"; // Добавляем useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import { GlobalStyle } from "../../Global.style.js";
-import useAuth from "../../components/Hooks/useAuth.js"; // Добавляем хук аутентификации
+import { AuthContext } from "../../context/AuthContext";
 
 function ContainerSignin() {
-  const [email, setEmail] = useState(""); // Состояние для email
-  const [password, setPassword] = useState(""); // Состояние для пароля
+  const [login, setLogin] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  // Получаем функцию login из контекста
+  const { login: authLogin } = useContext(AuthContext);
+
+  const handleTestLogin = () => {
+    setLogin("admin");
+    setPassword("admin");
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Здесь должна быть логика авторизации
-    // После успешной авторизации:
-    login("auth-token-example"); // Сохраняем токен
-    navigate("/"); // Переходим на главную
+    setIsLoading(true);
+    setError("");
+
+    try {
+      console.log("🔐 Попытка входа:", { login, password });
+
+      // Используем реальную функцию login из AuthContext
+      const result = await authLogin({ login, password });
+
+      if (result.success) {
+        console.log("✅ Вход успешен через AuthContext");
+        navigate("/");
+      } else {
+        setError(result.error || "Ошибка авторизации");
+      }
+    } catch (err) {
+      console.error("❌ Ошибка входа:", err);
+      setError("Ошибка авторизации. Проверьте данные и попробуйте снова.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -36,15 +62,48 @@ function ContainerSignin() {
             <ModalTitle>
               <h2>Вход</h2>
             </ModalTitle>
-            {/* Добавляем обработчик отправки формы */}
+
+            <div style={{ textAlign: "center", marginBottom: "15px" }}>
+              <button
+                type="button"
+                onClick={handleTestLogin}
+                style={{
+                  background: "transparent",
+                  border: "1px solid #565eef",
+                  color: "#565eef",
+                  padding: "8px 16px",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Заполнить тестовые данные (admin/admin)
+              </button>
+            </div>
+
+            {error && (
+              <div
+                style={{
+                  color: "red",
+                  textAlign: "center",
+                  marginBottom: "15px",
+                  padding: "10px",
+                  backgroundColor: "#ffe6e6",
+                  borderRadius: "4px",
+                }}
+              >
+                {error}
+              </div>
+            )}
+
             <Form id="formLogIn" action="#" onSubmit={handleSubmit}>
               <Input
-                type="email"
+                type="text"
                 name="login"
                 id="formlogin"
-                placeholder="Эл. почта"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Логин"
+                value={login}
+                onChange={(e) => setLogin(e.target.value)}
+                disabled={isLoading}
                 required
               />
               <Input
@@ -54,11 +113,16 @@ function ContainerSignin() {
                 placeholder="Пароль"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
                 required
               />
-              {/* Меняем Link на button для отправки формы */}
-              <Button className="_hover01" id="btnEnter" type="submit">
-                Войти
+              <Button
+                className="_hover01"
+                id="btnEnter"
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? "Вход..." : "Войти"}
               </Button>
               <FormGroup>
                 <p>Нужно зарегистрироваться?</p>

@@ -122,6 +122,7 @@ export const Button = styled.button`
 export const FormGroup = styled.div`
   width: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 5px;

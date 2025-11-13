@@ -3,7 +3,7 @@ import styled from "styled-components";
 export const HeaderStyle = styled.header`
   width: 100%;
   margin: 0 auto;
-  background-color: #ffffff;
+  background-color: var(--bg-fon);
 `;
 
 export const HeaderStyleContainer = styled.div`
@@ -68,7 +68,7 @@ export const HeaderUser = styled.a`
   justify-content: center;
   font-size: 14px;
   line-height: 20px;
-  color: #565eef;
+  color: var(--name-use);
   cursor: pointer;
 
   &::after {
@@ -77,8 +77,8 @@ export const HeaderUser = styled.a`
     width: 6px;
     height: 6px;
     border-radius: 1px;
-    border-left: 1.9px solid #565eef;
-    border-bottom: 1.9px solid #565eef;
+    border-left: 1.9px solid var(--name-use);
+    border-bottom: 1.9px solid var(--name-use);
     transform: rotate(-45deg);
     margin: -6px 0 0 5px;
     padding: 0;

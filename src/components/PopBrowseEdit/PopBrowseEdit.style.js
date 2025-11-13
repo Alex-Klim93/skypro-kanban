@@ -3,7 +3,7 @@ import styled from "styled-components";
 // Основной контейнер попапа
 export const PopBrowseContainer = styled.div`
   display: ${(props) =>
-    props.$isOpen ? "block" : "none"}; // Изменяем на управление через пропсы
+    props.isOpen ? "block" : "none"}; // Изменяем на управление через пропсы
   width: 100%;
   height: 100%;
   min-width: 375px;
@@ -125,7 +125,7 @@ export const FormBrowseArea = styled.textarea`
   width: 100%;
   outline: none;
   padding: 14px;
-  color: rgba(148, 166, 190, 1);
+  color: rgba(148, 166, 190, 1);;
   background: rgba(234, 238, 246, 1);
   border: 0px solid rgba(148, 166, 190, 0.4);
   border-radius: 8px;
@@ -172,7 +172,10 @@ export const StatusThemes = styled.div`
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: flex-start;
+  gap:7px;
 `;
+
+
 
 // Тема статуса
 export const StatusTheme = styled.div`
@@ -224,7 +227,7 @@ export const BrowseButtons = styled.div`
 
 // Кнопки редактирования (скрыты по умолчанию)
 export const EditButtons = styled.div`
-  display: none;
+  display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
@@ -470,7 +473,23 @@ export const DatePickValue = styled.input`
 
 // Вспомогательные классы
 export const HideElement = styled.div`
-  display: none;
+  width: auto;
+  height: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 14px 10px 14px;
+  box-sizing: border-box;
+  border: 0.7px solid rgba(148, 166, 190, 0.4);
+  border-radius: 24px;
+
+  color: rgba(148, 166, 190, 1);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 10px;
+  letter-spacing: -1%;
+  text-align: center;
 `;
 
 export const OrangeTheme = styled.div`
@@ -497,12 +516,12 @@ export const GrayTheme = styled.div`
   padding: 10px 14px 10px 14px;
   background: rgba(148, 166, 190, 1);
   border-radius: 24px;
-  color: rgba(255, 255, 255, 1);
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 10px;
-  letter-spacing: 0%;
-  text-align: center;
+    color: rgba(255, 255, 255, 1);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 10px;
+    letter-spacing: 0%;
+    text-align: center;
 `;
 
 export const ActiveCategory = styled.div`

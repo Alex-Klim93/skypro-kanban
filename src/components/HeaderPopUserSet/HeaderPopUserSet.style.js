@@ -7,9 +7,9 @@ export const PopUserSetContainer = styled.div`
   width: 213px;
   height: 205px;
   border-radius: 10px;
-  border: 0.7px solid var(--border-color);
+  border: 0.7px solid var(--bg-rgb);
   background: var(--bg-secondary);
-  box-shadow: 0px 10px 39px 0px rgba(26, 56, 101, 0.21);
+  box-shadow: var(--bg-shaow);
   padding: 34px;
   text-align: center;
   z-index: 2;
@@ -79,9 +79,9 @@ export const PopUserButton = styled.button`
   width: 72px;
   height: 30px;
   background: transparent;
-  color: var(--accent-primary);
+  color: var(--but-exit-color);
   border-radius: 4px;
-  border: 1px solid var(--accent-primary);
+  border: 1px solid var(--but-exit-color);
   cursor: pointer;
   outline: none;
   font-size: 14px;

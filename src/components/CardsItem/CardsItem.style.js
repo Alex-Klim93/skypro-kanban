@@ -18,7 +18,7 @@ export const CardsItemContainer = styled.div`
 export const Card = styled.div`
   width: 220px;
   height: 130px;
-  background-color: #ffffff;
+  background-color: var(--bg-fon);
   border-radius: 10px;
   display: flex;
   flex-direction: column;
@@ -30,7 +30,7 @@ export const Card = styled.div`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--bg-shaow);
   }
 `;
 
@@ -59,13 +59,13 @@ export const CardTheme = styled.div`
   background-color: ${(props) => {
     switch (props.$themeClass) {
       case "_orange":
-        return "#FFE4C2";
+        return "var(--orange-bg)";
       case "_green":
-        return "#B4FDD1";
+        return "var(--green-bg)";
       case "_purple":
-        return "#E9D4FF";
+        return "var(--purple-bg)";
       case "_gray":
-        return "#94A6BE";
+        return "var(--gray-bg)";
       default:
         return "#EAEEF6";
     }
@@ -73,13 +73,13 @@ export const CardTheme = styled.div`
   color: ${(props) => {
     switch (props.$themeClass) {
       case "_orange":
-        return "#FF6D00";
+        return "var(--orange-text)";
       case "_green":
-        return "#06B16E";
+        return "var(--green-text)";
       case "_purple":
-        return "#9A48F1";
+        return "var(--purple-text)";
       case "_gray":
-        return "#FFFFFF";
+        return "var(--gray-text)";
       default:
         return "#000000";
     }
@@ -110,7 +110,7 @@ export const CardButton = styled.a`
   cursor: pointer;
 
   &:hover div {
-    background-color: #565eef;
+    color: var(--accent-secondary);
   }
 `;
 
@@ -135,7 +135,7 @@ export const CardButtonDot = styled.div`
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background-color: #94a6be;
+  background-color: var(--text-secondary);
   transition: background-color 0.2s ease;
 `;
 
@@ -162,7 +162,7 @@ export const CardTitleLink = styled.a`
   width: 100%;
 
   &:hover h3 {
-    color: #565eef;
+    color: var(--text-secondary);
   }
 `;
 
@@ -174,7 +174,7 @@ export const CardTitle = styled.h3`
   font-size: 14px;
   font-weight: 500;
   line-height: 18px;
-  color: #000000;
+  color: var(--text-primary);
   margin-bottom: 10px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -203,12 +203,12 @@ export const CalendarIcon = styled.svg`
   height: 13px;
 
   path {
-    stroke: #94a6be;
+    stroke: var(--text-secondary);
     transition: stroke 0.2s ease;
   }
 
   ${Card}:hover & path {
-    stroke: #565eef;
+    stroke: var(--text-accent);
   }
 `;
 
@@ -220,12 +220,12 @@ export const DateText = styled.p`
   margin-left: 6px;
   font-size: 10px;
   line-height: 13px;
-  color: #94a6be;
+  color: var(--text-secondary);
   letter-spacing: 0.2px;
   margin: 0 0 0 6px;
   transition: color 0.2s ease;
 
   ${Card}:hover & {
-    color: #565eef;
+    color: var(--text-accent);
   }
 `;

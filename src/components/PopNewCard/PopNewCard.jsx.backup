@@ -1,5 +1,5 @@
 // PopNewCard.jsx
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import {
   PopNewCardContainer,
   PopNewCardWrapper,
@@ -34,18 +34,15 @@ import {
   CategoriesThemes,
   CategoryTheme,
 } from "./PopNewCard.style.js";
-import { TaskContext } from "../../context/TaskContext.js";
-import { AuthContext } from "../../context/AuthContext.js";
+// import { api } from "../../api/api.js";
+// import { authCheck } from "../../api/authCheck.js";
 
-function PopNewCard({ isOpen, onClose }) {
-  const { addTask } = useContext(TaskContext);
-  const { isAuthenticated } = useContext(AuthContext);
-
+function PopNewCard({ isOpen, onClose, onTaskCreated }) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     topic: "Web Design",
-    date: new Date().toISOString(),
+    date: new Date().toISOString(), // ✅ Исправлено: полная ISO строка
   });
 
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -117,7 +114,7 @@ function PopNewCard({ isOpen, onClose }) {
       setSelectedDate(date);
       setFormData((prev) => ({
         ...prev,
-        date: date.toISOString(),
+        date: date.toISOString(), // ✅ Сохраняем полную ISO строку
       }));
     }
   };
@@ -156,7 +153,7 @@ function PopNewCard({ isOpen, onClose }) {
   const handleCreate = async () => {
     if (!validateForm()) return;
 
-    if (!isAuthenticated) {
+    if (!authCheck.isUserAuthenticated()) {
       setError("Необходимо авторизоваться для создания задачи");
       return;
     }
@@ -168,26 +165,30 @@ function PopNewCard({ isOpen, onClose }) {
       const taskData = {
         title: formData.title.trim(),
         topic: formData.topic,
-        status: "Без статуса",
+        status: "Без статуса", // ✅ Статус по умолчанию
         description: formData.description.trim(),
-        date: formData.date,
+        date: formData.date, // ✅ Используем полную ISO строку
       };
 
       console.log("🔄 Отправка данных задачи:", taskData);
 
-      // Используем функцию addTask из контекста - она сама обновит задачи
-      await addTask(taskData);
-      console.log("✅ Задача создана");
+      const response = await api.createTask(taskData);
+      console.log("✅ Задача создана:", response);
 
       // Сбрасываем форму
       setFormData({
         title: "",
         description: "",
         topic: "Web Design",
-        date: new Date().toISOString(),
+        date: new Date().toISOString(), // ✅ Исправлено
       });
       setSelectedDate(new Date());
       setCurrentMonth(new Date());
+
+      // Уведомляем родительский компонент
+      if (onTaskCreated) {
+        onTaskCreated();
+      }
 
       // Закрываем попап
       if (onClose) {
@@ -210,7 +211,7 @@ function PopNewCard({ isOpen, onClose }) {
       title: "",
       description: "",
       topic: "Web Design",
-      date: new Date().toISOString(),
+      date: new Date().toISOString(), // ✅ Исправлено
     });
     setSelectedDate(new Date());
     setCurrentMonth(new Date());
