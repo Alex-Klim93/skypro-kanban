@@ -1,96 +1,61 @@
-import { useState, useEffect, useCallback, useContext } from "react";
+import { useContext } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { GlobalStyle } from "./Global.style.js";
 import MainPage from "./pages/MainPage/MainPage.jsx";
 import ContainerSignin from "./pages/ContainerSignin/ContainerSignin.jsx";
 import ContainerSignup from "./pages/ContainerSignup/ContainerSignup.jsx";
-import EditTaskPage from "./pages/EditTaskPage/EditTaskPage.jsx";
-import ViewTaskPage from "./pages/ViewTaskPage/ViewTaskPage.jsx";
-import ExitPage from "./pages/ExitPage/ExitPage.jsx";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage.jsx";
 import { ThemeProvider } from "./components/ThemeContext/ThemeContext.jsx";
 import ProtectedRoute from "./components/Routes/ProtectedRoute.jsx";
 import { AuthContext } from "./context/AuthContext";
 
 function App() {
-  // ✅ ИСПРАВЛЕНО: используем AuthContext вместо локальных состояний
-  const { user, logout } = useContext(AuthContext);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, logout, isLoading } = useContext(AuthContext);
 
-  // ✅ ИСПРАВЛЕНО: проверяем авторизацию через AuthContext
-  const verifyAuth = useCallback(async () => {
-    try {
-      console.log("🔐 Проверка авторизации через AuthContext...");
-      console.log("✅ Данные пользователя:", user);
-      
-      // Авторизация считается успешной, если есть данные пользователя
-      const authStatus = !!user;
-      console.log("✅ Статус авторизации:", authStatus);
-      
-      // Если нужно загрузить дополнительные данные при авторизации, можно сделать это здесь
-      if (authStatus) {
-        console.log("👥 Пользователь авторизован:", user.name);
-        // Здесь можно загрузить список пользователей или другие данные
-      }
-      
-      setIsLoading(false);
-    } catch (error) {
-      console.error("❌ Ошибка проверки авторизации:", error);
-      setIsLoading(false);
-    }
-  }, [user]);
-
-  // Проверяем авторизацию при монтировании компонента и при изменении пользователя
-  useEffect(() => {
-    verifyAuth();
-  }, [verifyAuth]);
-
-  // ✅ ИСПРАВЛЕНО: функция для выхода использует AuthContext
-  const handleLogout = useCallback(() => {
+  const handleLogout = () => {
     console.log("🚪 Выход из системы через AuthContext...");
-    logout(); // Используем метод logout из AuthContext
-  }, [logout]);
+    logout();
+  };
 
-  // Показываем индикатор загрузки во время проверки авторизации
+  // ✅ ПРОСТОЙ ИНДИКАТОР ЗАГРУЗКИ
   if (isLoading) {
     return (
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "center", 
-        alignItems: "center", 
-        height: "100vh",
-        fontSize: "18px",
-        color: "#565eef"
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          fontSize: "18px",
+          color: "#565eef",
+        }}
+      >
         Загрузка...
       </div>
     );
   }
 
-  // ✅ ИСПРАВЛЕНО: проверяем авторизацию через наличие пользователя в контексте
   const isAuthenticated = !!user;
 
   return (
     <ThemeProvider>
       <GlobalStyle />
       <Routes>
-        {/* Публичные маршруты - доступны без авторизации */}
+        {/* Публичные маршруты */}
         <Route
           path="/sign-in"
           element={
-            // Если пользователь уже авторизован, перенаправляем на главную
             isAuthenticated ? <Navigate to="/" replace /> : <ContainerSignin />
           }
         />
         <Route
           path="/sign-up"
           element={
-            // Если пользователь уже авторизован, перенаправляем на главную
             isAuthenticated ? <Navigate to="/" replace /> : <ContainerSignup />
           }
         />
 
-        {/* Защищенные маршруты - требуют авторизации */}
+        {/* Защищенные маршруты */}
         <Route
           path="/"
           element={
@@ -98,50 +63,19 @@ function App() {
               isAuthenticated={isAuthenticated}
               isLoading={isLoading}
             >
-              {/* Передаем функцию выхода в MainPage для использования в попапе выхода */}
-              <MainPage/>
+              <MainPage onLogout={handleLogout} />
             </ProtectedRoute>
           }
-        />
-        
-        <Route
-          path="/edit-task/:id"
-          element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              isLoading={isLoading}
-            >
-              <EditTaskPage />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/task/:id"
-          element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              isLoading={isLoading}
-            >
-              <ViewTaskPage />
-            </ProtectedRoute>
-          }
-        />
+        >
+          {/* Вложенные маршруты для модальных окон */}
+          <Route path="exit" element={null} />
+          <Route path="new-task" element={null} />
+          <Route path="task/:id" element={null} />
+          <Route path="task/:id/edit" element={null} />
+          <Route path="user-settings" element={null} />
+        </Route>
 
-        {/* Маршрут для страницы выхода */}
-        <Route
-          path="/exit"
-          element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              isLoading={isLoading}
-            >
-              <ExitPage onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Страница 404 для несуществующих маршрутов */}
+        {/* Страница 404 */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </ThemeProvider>

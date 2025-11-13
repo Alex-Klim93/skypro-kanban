@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react"; // ДОБАВИТЬ useContext
+import { useState, useEffect, useContext, useRef } from "react";
 import { GlobalStyle } from "../../Global.style.js";
 import HeaderPopUserSet from "../HeaderPopUserSet/HeaderPopUserSet.jsx";
 import {
@@ -10,26 +10,21 @@ import {
   HeaderButton,
   HeaderUser,
 } from "./Header.style.js";
-import { useNavigate } from "react-router-dom";
-
-// ДОБАВЛЕНО: импорт контекста темы
+import { useNavigate, useLocation } from "react-router-dom";
 import { useThemeContext } from "../ThemeContext/ThemeContext.jsx";
-
-// ДОБАВЛЕНО: импорт AuthContext
 import { AuthContext } from "../../context/AuthContext";
 
-function Header({ onExitClick, onAddTaskClick }) {
-  const [open, setOpen] = useState(false);
+function Header({ onExitClick, onAddTaskClick, onUserSettingsClick }) {
   const [userDisplayName, setUserDisplayName] = useState("Пользователь");
+  const [userButtonRect, setUserButtonRect] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const userButtonRef = useRef(null);
 
-  // ДОБАВЛЕНО: получаем состояние темы
   const { isDarkTheme } = useThemeContext();
-
-  // ✅ ИСПРАВЛЕНО: получаем пользователя из AuthContext
   const { user } = useContext(AuthContext);
 
-  // ✅ ИСПРАВЛЕНО: используем данные из AuthContext вместо currentUser
+  // Обновление данных пользователя
   useEffect(() => {
     console.log("🔄 Обновление данных пользователя в Header:", user);
 
@@ -43,10 +38,29 @@ function Header({ onExitClick, onAddTaskClick }) {
       console.log("⚠️ Данные пользователя не найдены");
       setUserDisplayName("Пользователь");
     }
-  }, [user]); // ✅ Обновляем при изменении user из контекста
+  }, [user]);
+
+  // Получаем позицию кнопки пользователя
+  const updateUserButtonPosition = () => {
+    if (userButtonRef.current) {
+      const rect = userButtonRef.current.getBoundingClientRect();
+      setUserButtonRect({
+        top: rect.top,
+        right: rect.right,
+        width: rect.width,
+        height: rect.height,
+      });
+    }
+  };
 
   const handleUserClick = () => {
-    setOpen(!open);
+    updateUserButtonPosition();
+    if (onUserSettingsClick) {
+      onUserSettingsClick();
+    } else {
+      // Fallback: навигация напрямую
+      navigate("/user-settings");
+    }
   };
 
   const handleAddTask = () => {
@@ -55,48 +69,86 @@ function Header({ onExitClick, onAddTaskClick }) {
     }
   };
 
+  // Обновляем позицию при изменении размера окна
+  useEffect(() => {
+    const handleResize = () => {
+      if (location.pathname === "/user-settings") {
+        updateUserButtonPosition();
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [location.pathname]);
+
+  // Определяем, открыты ли настройки пользователя для подсветки кнопки
+  const isUserSettingsOpen = location.pathname === "/user-settings";
+
   return (
     <>
       <GlobalStyle />
-      <HeaderStyle>
-        <HeaderStyleContainer>
-          <HeaderBlock>
-            {/* Логотип для светлой темы - показывается когда isDarkTheme = false */}
-            <HeaderLogo
-              className={!isDarkTheme ? "_show _light" : "_light"}
-              style={{ display: !isDarkTheme ? "block" : "none" }}
-            >
-              <a href="" target="_self">
-                <img src="images/logo.png" alt="logo" />
-              </a>
-            </HeaderLogo>
-
-            {/* Логотип для темной темы - показывается когда isDarkTheme = true */}
-            <HeaderLogo
-              className={isDarkTheme ? "_show _dark" : "_dark"}
-              style={{ display: isDarkTheme ? "block" : "none" }}
-            >
-              <a href="" target="_self">
-                <img src="images/logo_dark.png" alt="logo" />
-              </a>
-            </HeaderLogo>
-
-            <HeaderNav>
-              <HeaderButton
-                className="_hover01"
-                id="btnMainNew"
-                onClick={handleAddTask}
+      {/* ✅ ДОБАВЛЕНА ОБЕРТКА С ОТНОСИТЕЛЬНЫМ ПОЗИЦИОНИРОВАНИЕМ */}
+      <div style={{ position: "relative" }}>
+        <HeaderStyle>
+          <HeaderStyleContainer>
+            <HeaderBlock>
+              {/* Логотип для светлой темы */}
+              <HeaderLogo
+                className={!isDarkTheme ? "_show _light" : "_light"}
+                style={{ display: !isDarkTheme ? "block" : "none" }}
               >
-                Создать новую задачу
-              </HeaderButton>
-              <HeaderUser onClick={handleUserClick}>
-                {userDisplayName}
-              </HeaderUser>
-              <HeaderPopUserSet isOpen={open} onExitClick={onExitClick} />
-            </HeaderNav>
-          </HeaderBlock>
-        </HeaderStyleContainer>
-      </HeaderStyle>
+                <a href="" target="_self">
+                  <img src="images/logo.png" alt="logo" />
+                </a>
+              </HeaderLogo>
+
+              {/* Логотип для темной темы */}
+              <HeaderLogo
+                className={isDarkTheme ? "_show _dark" : "_dark"}
+                style={{ display: isDarkTheme ? "block" : "none" }}
+              >
+                <a href="" target="_self">
+                  <img src="images/logo_dark.png" alt="logo" />
+                </a>
+              </HeaderLogo>
+
+              <HeaderNav>
+                <HeaderButton
+                  className="_hover01"
+                  id="btnMainNew"
+                  onClick={handleAddTask}
+                >
+                  Создать новую задачу
+                </HeaderButton>
+                <HeaderUser
+                  ref={userButtonRef}
+                  onClick={handleUserClick}
+                  style={
+                    isUserSettingsOpen
+                      ? {
+                          backgroundColor: isDarkTheme ? "#333" : "#f4f4f4",
+                          color: isDarkTheme ? "#fff" : "#000",
+                        }
+                      : {}
+                  }
+                >
+                  {userDisplayName}
+                </HeaderUser>
+              </HeaderNav>
+            </HeaderBlock>
+          </HeaderStyleContainer>
+        </HeaderStyle>
+
+        {/* ✅ ПЕРЕМЕЩЕНО ВНУТРЬ HEADER ДЛЯ КОРРЕКТНОГО ПОЗИЦИОНИРОВАНИЯ */}
+        {isUserSettingsOpen && (
+          <HeaderPopUserSet
+            isOpen={true}
+            onExitClick={onExitClick}
+            onClose={() => navigate("/")}
+            userButtonRect={userButtonRect}
+          />
+        )}
+      </div>
     </>
   );
 }

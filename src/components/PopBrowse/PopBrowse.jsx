@@ -63,7 +63,7 @@ function PopBrowse({ isOpen, onClose, cardId, onEdit }) {
   // Используем ID из пропсов или из URL параметров
   const actualCardId = cardId || urlTaskId;
 
-  // ИСПРАВЛЕНО: упрощенный эффект для поиска карточки
+  // ✅ ИСПРАВЛЕНО: используем весь массив tasks вместо tasks.length
   useEffect(() => {
     if (isOpen && actualCardId && tasks.length > 0) {
       const card = tasks.find(
@@ -84,9 +84,9 @@ function PopBrowse({ isOpen, onClose, cardId, onEdit }) {
         console.error("❌ Карточка не найдена с ID:", actualCardId);
       }
     }
-  }, [isOpen, actualCardId, tasks.length]); // Только tasks.length, а не весь массив
+  }, [isOpen, actualCardId, tasks]); // ✅ ИСПРАВЛЕНО: используем tasks вместо tasks.length
 
-  // ИСПРАВЛЕНО: отдельный эффект для генерации календаря
+  // ✅ ИСПРАВЛЕНО: отдельный эффект для генерации календаря
   useEffect(() => {
     if (currentCard) {
       generateCalendarDays();
