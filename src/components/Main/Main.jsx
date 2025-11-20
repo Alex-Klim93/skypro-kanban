@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+// Main.jsx
+import { useContext } from "react";
 import MainColumn from "../MainColumn/MainColumn.jsx";
 import { GlobalStyle } from "../../Global.style.js";
 import {
@@ -9,30 +10,14 @@ import {
   LoadingText,
 } from "./Main.style";
 import { Column, ColumnTitle } from "../MainColumn/MainColumn.style.js";
+import { useTaskData } from "../../data.js";
+import { AuthContext } from "../../context/AuthContext";
 
-/**
- * Главный компонент приложения
- * Отображает основной контент с колонками задач
- * Включает состояние загрузки для имитации получения данных
- *
- * @returns {JSX.Element} Основной layout приложения
- */
 function Main({ onTaskClick }) {
-  // Состояние для управления индикатором загрузки
-  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useContext(AuthContext);
 
-  /**
-   * Эффект для имитации загрузки данных
-   * Устанавливает таймер на 1.5 секунды для скрытия индикатора
-   */
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-
-    // Очистка таймера при размонтировании компонента
-    return () => clearTimeout(timer);
-  }, []);
+  // ✅ ИСПРАВЛЕНО: используем TaskContext через хук useTaskData
+  const { cardList: tasks, isLoading, error } = useTaskData();
 
   return (
     <>
@@ -41,7 +26,6 @@ function Main({ onTaskClick }) {
         <Container>
           <MainBlock>
             {isLoading ? (
-              // Отображение индикатора загрузки
               <MainContent>
                 <Column>
                   <ColumnTitle>
@@ -49,10 +33,17 @@ function Main({ onTaskClick }) {
                   </ColumnTitle>
                 </Column>
               </MainContent>
-            ) : (
-              // Отображение основного контента после загрузки
+            ) : error ? (
               <MainContent>
-                <MainColumn onTaskClick={onTaskClick}/>
+                <Column>
+                  <ColumnTitle>
+                    <LoadingText style={{ color: "red" }}>{error}</LoadingText>
+                  </ColumnTitle>
+                </Column>
+              </MainContent>
+            ) : (
+              <MainContent>
+                <MainColumn tasks={tasks} onTaskClick={onTaskClick} />
               </MainContent>
             )}
           </MainBlock>

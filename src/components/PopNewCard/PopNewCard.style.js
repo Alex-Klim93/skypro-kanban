@@ -28,19 +28,19 @@ export const PopNewCardWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--overlay);
 `;
 
 // Блок с содержимым карточки
 export const PopNewCardBlock = styled.div`
   display: block;
   margin: 0 auto;
-  background-color: #ffffff;
+  background-color: var(--bg-secondary);
   max-width: 630px;
   width: 100%;
   padding: 40px 30px 48px;
   border-radius: 10px;
-  border: 0.7px solid #d4dbe5;
+  border: 0.7px solid var(--border-secondary);
   position: relative;
 `;
 
@@ -52,7 +52,7 @@ export const PopNewCardContent = styled.div`
 
 // Заголовок карточки
 export const PopNewCardTitle = styled.h3`
-  color: #000;
+  color: var(--text-primary);
   font-size: 20px;
   font-weight: 600;
   line-height: 24px;
@@ -64,11 +64,11 @@ export const PopNewCardClose = styled.a`
   position: absolute;
   top: 20px;
   right: 30px;
-  color: #94a6be;
+  color: var(--text-secondary);
   cursor: pointer;
 
   &:hover {
-    color: #000000;
+    color: var(--text-accent);
   }
 `;
 
@@ -103,7 +103,7 @@ export const FormNewBlock = styled.div`
 
 // Подзаголовок
 export const Subtitle = styled.label`
-  color: #000;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
   line-height: 1;
@@ -114,8 +114,9 @@ export const FormNewInput = styled.input`
   width: 100%;
   outline: none;
   padding: 14px;
+  color: var(--text-secondary);
   background: transparent;
-  border: 0.7px solid rgba(148, 166, 190, 0.4);
+  border: 0.7px solid var(--border-primary);
   border-radius: 8px;
   font-size: 14px;
   line-height: 1;
@@ -126,7 +127,7 @@ export const FormNewInput = styled.input`
     font-weight: 400;
     font-size: 14px;
     line-height: 1px;
-    color: #94a6be;
+    color: var(--text-secondary);
     letter-spacing: -0.14px;
   }
 `;
@@ -136,8 +137,9 @@ export const FormNewTextarea = styled.textarea`
   width: 100%;
   outline: none;
   padding: 14px;
+  color: var(--text-secondary);
   background: transparent;
-  border: 0.7px solid rgba(148, 166, 190, 0.4);
+  border: 0.7px solid var(--border-primary);
   border-radius: 8px;
   font-size: 14px;
   line-height: 1;
@@ -149,7 +151,7 @@ export const FormNewTextarea = styled.textarea`
     font-weight: 400;
     font-size: 14px;
     line-height: 1px;
-    color: #94a6be;
+    color: var(--text-secondary);
     letter-spacing: -0.14px;
   }
 
@@ -163,20 +165,20 @@ export const FormNewTextarea = styled.textarea`
 export const FormNewCreateButton = styled.button`
   width: 132px;
   height: 30px;
-  background-color: #565eef;
+  background-color: var(--text-accent);
   border-radius: 4px;
   border: 0;
   outline: none;
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
-  color: #ffffff;
+  color: var(--text-primary);
   float: right;
   cursor: pointer;
 
   /* Эффект при наведении */
   &:hover {
-    background-color: #33399b;
+    background-color: var(--accent-hover);
   }
 
   @media (max-width: 495px) {
@@ -198,7 +200,7 @@ export const CalendarContainer = styled.div`
 
 // Заголовок календаря
 export const CalendarTitle = styled.p`
-  color: #000;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
   line-height: 1;
@@ -231,7 +233,7 @@ export const CalendarNav = styled.div`
 
 // Месяц календаря
 export const CalendarMonth = styled.div`
-  color: #94a6be;
+  color: var(--text-secondary);
   font-size: 14px;
   line-height: 25px;
   font-weight: 600;
@@ -254,7 +256,7 @@ export const NavAction = styled.div`
   justify-content: center;
 
   svg {
-    fill: #94a6be;
+    fill: var(--accent-secondary);
   }
 `;
 
@@ -279,7 +281,7 @@ export const CalendarDaysNames = styled.div`
 
 // Имя дня недели
 export const CalendarDayName = styled.div`
-  color: #94a6be;
+  color: var(--text-secondary);
   font-size: 10px;
   font-weight: 500;
   line-height: normal;
@@ -321,7 +323,7 @@ export const CalendarCell = styled.div`
   flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
-  color: #94a6be;
+  color: var(--accent-secondary);
   font-size: 10px;
   line-height: 1;
   letter-spacing: -0.2px;
@@ -335,8 +337,8 @@ export const CalendarCell = styled.div`
 
   /* Эффект при наведении */
   &:hover {
-    color: #94a6be;
-    background-color: #eaeef6;
+    color: var(--text-secondary);
+    background-color: var(--bg-tertiary);
   }
 
   /* Стили для дней из других месяцев */
@@ -356,8 +358,8 @@ export const CalendarCell = styled.div`
 
   /* Стили для активного дня */
   &._active-day {
-    background-color: #94a6be;
-    color: #ffffff;
+    background-color: var(--accent-secondary);
+    color: var(--bg-secondary);
   }
 `;
 
@@ -372,12 +374,12 @@ export const CalendarPeriod = styled.div`
 
 // Текст периода
 export const CalendarPeriodText = styled.p`
-  color: #94a6be;
+  color: var(--text-secondary);
   font-size: 10px;
   line-height: 1;
 
   span {
-    color: #000000;
+    color: var(--text-primary);
   }
 
   @media (max-width: 660px) {
@@ -397,7 +399,7 @@ export const CategoriesContainer = styled.div`
 
 // Текст категорий
 export const CategoriesText = styled.p`
-  color: #000;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
   line-height: 1;
@@ -437,19 +439,19 @@ export const CategoryTheme = styled.div`
 
   /* Оранжевая тема */
   &._orange {
-    background-color: #ffe4c2;
-    color: #ff6d00;
+    background-color: var(--orange-bg);
+    color: var(--orange-text);
   }
 
   /* Зеленая тема */
   &._green {
-    background-color: #b4fdd1;
-    color: #06b16e;
+    background-color: var(--green-bg);
+    color: var(--green-text);
   }
 
   /* Фиолетовая тема */
   &._purple {
-    background-color: #e9d4ff;
-    color: #9a48f1;
+    background-color: var(--purple-bg);
+    color: var(--purple-text);
   }
 `;

@@ -1,55 +1,81 @@
+import { useContext } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { GlobalStyle } from "./Global.style.js";
 import MainPage from "./pages/MainPage/MainPage.jsx";
 import ContainerSignin from "./pages/ContainerSignin/ContainerSignin.jsx";
 import ContainerSignup from "./pages/ContainerSignup/ContainerSignup.jsx";
-import EditTaskPage from "./pages/EditTaskPage/EditTaskPage.jsx";
-import ViewTaskPage from "./pages/ViewTaskPage/ViewTaskPage.jsx";
-import ExitPage from "./pages/ExitPage/ExitPage.jsx";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage.jsx";
 import { ThemeProvider } from "./components/ThemeContext/ThemeContext.jsx";
 import ProtectedRoute from "./components/Routes/ProtectedRoute.jsx";
+import { AuthContext } from "./context/AuthContext";
 
 function App() {
+  const { user, logout, isLoading } = useContext(AuthContext);
+
+  const handleLogout = () => {
+    console.log("🚪 Выход из системы через AuthContext...");
+    logout();
+  };
+
+  // ✅ ПРОСТОЙ ИНДИКАТОР ЗАГРУЗКИ
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          fontSize: "18px",
+          color: "#565eef",
+        }}
+      >
+        Загрузка...
+      </div>
+    );
+  }
+
+  const isAuthenticated = !!user;
+
   return (
     <ThemeProvider>
       <GlobalStyle />
       <Routes>
-        {/* Public routes */}
-        <Route path="/sign-in" element={<ContainerSignin />} />
-        <Route path="/sign-up" element={<ContainerSignup />} />
+        {/* Публичные маршруты */}
+        <Route
+          path="/sign-in"
+          element={
+            isAuthenticated ? <Navigate to="/" replace /> : <ContainerSignin />
+          }
+        />
+        <Route
+          path="/sign-up"
+          element={
+            isAuthenticated ? <Navigate to="/" replace /> : <ContainerSignup />
+          }
+        />
 
-        {/* Protected routes */}
+        {/* Защищенные маршруты */}
         <Route
           path="/"
           element={
-            <ProtectedRoute>
-              <MainPage />
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              isLoading={isLoading}
+            >
+              <MainPage onLogout={handleLogout} />
             </ProtectedRoute>
           }
-        />
-        <Route
-          path="/edit-task/:id"
-          element={
-            <ProtectedRoute>
-              <EditTaskPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/task/:id"
-          element={
-            <ProtectedRoute>
-              <ViewTaskPage />
-            </ProtectedRoute>
-          }
-        />
+        >
+          {/* Вложенные маршруты для модальных окон */}
+          <Route path="exit" element={null} />
+          <Route path="new-task" element={null} />
+          <Route path="task/:id" element={null} />
+          <Route path="task/:id/edit" element={null} />
+          <Route path="user-settings" element={null} />
+        </Route>
 
-        {/* Redirects for old modal URLs */}
-        <Route path="/sign-in" element={<ContainerSignin />} />
-        <Route path="/sign-up" element={<ContainerSignup />} />
-
-        {/* 404 page */}
+        {/* Страница 404 */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </ThemeProvider>

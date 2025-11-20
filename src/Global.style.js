@@ -41,7 +41,7 @@ export const GlobalStyle = createGlobalStyle`
 
   /* CSS переменные для светлой темы */
   :root {
-    --bg-primary: #F1F1F1;
+    --bg-primary: rgba(234, 238, 246, 1);
     --bg-secondary: #FFFFFF;
     --bg-tertiary: #EAEEF6;
     --text-primary: #000000;
@@ -65,11 +65,21 @@ export const GlobalStyle = createGlobalStyle`
     --purple-text: #9A48F1;
     --gray-bg: #94A6BE;
     --gray-text: #FFFFFF;
+
+    /* Стили в светлой теме */
+    /* Header */
+    --bg-fon: #FFFFFF;
+    --name-use:rgba(86, 94, 239, 1);
+    /* HeaderPopUserSet */
+    --bg-rgb: rgba(255, 255, 255, 1);
+    --but-exit-color: #565EEF;
+    --bg-shaow: 0px 10px 39px 0px rgba(26, 56, 101, 0.21);
+
   }
 
   /* CSS переменные для темной темы */
   [data-theme="dark"] {
-    --bg-primary: #1a1a1a;
+    --bg-primary: rgba(21, 20, 25, 1);
     --bg-secondary: #2d2d2d;
     --bg-tertiary: #3a3a3a;
     --text-primary: #FFFFFF;
@@ -93,6 +103,15 @@ export const GlobalStyle = createGlobalStyle`
     --purple-text: #B28AFF;
     --gray-bg: #4a5568;
     --gray-text: #E2E8F0;
+
+    /* Стили в темной теме */
+    /* Header */
+    --bg-fon: rgba(32, 32, 44, 1);
+    --name-use:rgba(255, 255, 255, 1);
+    /* HeaderPopUserSet */
+    --bg-rgb: rgba(32, 34, 41, 1);
+    --bg-shaow: 0px 10px 39px 0px rgba(148, 166, 190, 0.4);
+    --but-exit-color: #FFFFFF;
   }
 
   body {

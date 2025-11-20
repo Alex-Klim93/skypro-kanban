@@ -1,24 +1,18 @@
-import { useState, useCallback } from "react";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext"; // ИСПРАВЛЕНО: используем контекст
 
 export function useAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    !!localStorage.getItem("authToken")
-  );
+  // ✅ ИСПРАВЛЕНО: используем AuthContext вместо локального состояния
+  const { user, login, logout } = useContext(AuthContext);
 
-  const login = useCallback((token) => {
-    localStorage.setItem("authToken", token);
-    setIsAuthenticated(true);
-  }, []);
-
-  const logout = useCallback(() => {
-    localStorage.removeItem("authToken");
-    setIsAuthenticated(false);
-  }, []);
+  // ✅ ИСПРАВЛЕНО: проверяем авторизацию через наличие пользователя
+  const isAuthenticated = !!user;
 
   return {
     isAuthenticated,
     login,
     logout,
+    user, // ✅ ДОБАВЛЕНО: возвращаем данные пользователя
   };
 }
 

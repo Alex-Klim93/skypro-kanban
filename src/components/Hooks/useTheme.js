@@ -1,7 +1,9 @@
-import { useThemeContext } from "../ThemeContext/ThemeContext";
+import { useContext } from "react";
+import { ThemeContext } from "../context/ThemeContext"; // ИСПРАВЛЕНО: используем контекст напрямую
 
 export const useThemeStyles = () => {
-  const { isDarkTheme } = useThemeContext(); // Используем переименованный хук
+  // ✅ ИСПРАВЛЕНО: используем ThemeContext напрямую
+  const { isDarkTheme } = useContext(ThemeContext);
 
   return {
     backgroundColor: isDarkTheme ? "var(--bg-secondary)" : "#FFFFFF",
@@ -9,5 +11,11 @@ export const useThemeStyles = () => {
     borderColor: isDarkTheme
       ? "var(--border-color)"
       : "rgba(148, 166, 190, 0.4)",
+    isDarkTheme, // ✅ ДОБАВЛЕНО: возвращаем состояние темы
   };
+};
+
+// ✅ ДОБАВЛЕНО: альтернативный хук для удобства
+export const useTheme = () => {
+  return useContext(ThemeContext);
 };

@@ -21,7 +21,7 @@ const cardAnimation = keyframes`
  */
 export const MainContainer = styled.main`
   width: 100%;
-  background-color: #eaeef6;
+  background-color: var(--bg-primary);
   min-height: calc(100vh - 70px); /* Высота минус header */
 `;
 
