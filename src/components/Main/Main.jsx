@@ -1,3 +1,4 @@
+// Main.jsx
 import { useState, useEffect } from "react";
 import MainColumn from "../MainColumn/MainColumn.jsx";
 import { GlobalStyle } from "../../Global.style.js";
@@ -9,30 +10,41 @@ import {
   LoadingText,
 } from "./Main.style";
 import { Column, ColumnTitle } from "../MainColumn/MainColumn.style.js";
+import { loadTasksFromServer } from "../../data.js";
+import { authCheck } from "../../api/authCheck.js";
 
-/**
- * Главный компонент приложения
- * Отображает основной контент с колонками задач
- * Включает состояние загрузки для имитации получения данных
- *
- * @returns {JSX.Element} Основной layout приложения
- */
-function Main({ onTaskClick }) {
-  // Состояние для управления индикатором загрузки
+function Main({ onTaskClick, refreshTrigger, setRefreshTrigger }) {
   const [isLoading, setIsLoading] = useState(true);
+  const [tasks, setTasks] = useState([]);
+  const [error, setError] = useState(null);
 
-  /**
-   * Эффект для имитации загрузки данных
-   * Устанавливает таймер на 1.5 секунды для скрытия индикатора
-   */
-  useEffect(() => {
-    const timer = setTimeout(() => {
+  const loadTasks = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      if (!authCheck.isUserAuthenticated()) {
+        console.log("⚠️ Пользователь не авторизован");
+        setIsLoading(false);
+        return;
+      }
+
+      console.log("🔄 Загрузка задач...");
+      const loadedTasks = await loadTasksFromServer();
+      setTasks(loadedTasks);
+      console.log("✅ Задачи загружены:", loadedTasks.length);
+    } catch (error) {
+      console.error("❌ Ошибка загрузки задач:", error);
+      setError("Не удалось загрузить задачи");
+      setTasks([]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
+  };
 
-    // Очистка таймера при размонтировании компонента
-    return () => clearTimeout(timer);
-  }, []);
+  useEffect(() => {
+    loadTasks();
+  }, [refreshTrigger]);
 
   return (
     <>
@@ -41,7 +53,6 @@ function Main({ onTaskClick }) {
         <Container>
           <MainBlock>
             {isLoading ? (
-              // Отображение индикатора загрузки
               <MainContent>
                 <Column>
                   <ColumnTitle>
@@ -49,10 +60,22 @@ function Main({ onTaskClick }) {
                   </ColumnTitle>
                 </Column>
               </MainContent>
-            ) : (
-              // Отображение основного контента после загрузки
+            ) : error ? (
               <MainContent>
-                <MainColumn onTaskClick={onTaskClick}/>
+                <Column>
+                  <ColumnTitle>
+                    <LoadingText style={{ color: "red" }}>{error}</LoadingText>
+                  </ColumnTitle>
+                </Column>
+              </MainContent>
+            ) : (
+              <MainContent>
+                <MainColumn
+                  tasks={tasks}
+                  onTaskClick={onTaskClick}
+                  refreshTrigger={refreshTrigger}
+                  setRefreshTrigger={setRefreshTrigger}
+                />
               </MainContent>
             )}
           </MainBlock>

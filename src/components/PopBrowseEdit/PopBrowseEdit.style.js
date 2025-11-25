@@ -3,7 +3,7 @@ import styled from "styled-components";
 // Основной контейнер попапа
 export const PopBrowseContainer = styled.div`
   display: ${(props) =>
-    props.$isOpen ? "block" : "none"}; // Изменяем на управление через пропсы
+    props.isOpen ? "block" : "none"}; // Изменяем на управление через пропсы
   width: 100%;
   height: 100%;
   min-width: 375px;
@@ -23,7 +23,7 @@ export const ActiveStatus = styled.div`
   padding: 6px 12px;
 
   p {
-    color: var(--bg-secondary)f;
+    color: var(--bg-secondary);
   }
 `;
 
@@ -88,7 +88,19 @@ export const PopBrowseTitle = styled.h3`
   line-height: 100%;
   letter-spacing: 0px;
   text-align: left;
+
+  .PopBrowseTitle {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 100%;
+    letter-spacing: 0px;
+    text-align: left;
+  }
 `;
+
 
 // Обертка для формы и календаря
 export const PopBrowseWrap = styled.div`
@@ -140,7 +152,7 @@ export const FormBrowseArea = styled.textarea`
     font-weight: 400;
     font-size: 14px;
     line-height: 1px;
-    color: var(--text-secondary);
+    color: var(--accent-secondary);
     letter-spacing: -0.14px;
   }
 
@@ -172,7 +184,10 @@ export const StatusThemes = styled.div`
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: flex-start;
+  gap:7px;
 `;
+
+
 
 // Тема статуса
 export const StatusTheme = styled.div`
@@ -224,7 +239,7 @@ export const BrowseButtons = styled.div`
 
 // Кнопки редактирования (скрыты по умолчанию)
 export const EditButtons = styled.div`
-  display: none;
+  display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
@@ -303,7 +318,7 @@ export const CalendarNav = styled.div`
 
 // Месяц календаря
 export const CalendarMonth = styled.div`
-  color: var(--accent-secondary);
+  color: var(--text-secondary);
   font-size: 14px;
   line-height: 25px;
   font-weight: 600;
@@ -326,7 +341,7 @@ export const NavAction = styled.div`
   justify-content: center;
 
   svg {
-    fill: var(--accent-secondary);
+    fill: var(--text-secondary);
   }
 `;
 
@@ -351,7 +366,7 @@ export const CalendarDaysNames = styled.div`
 
 // Имя дня недели
 export const CalendarDayName = styled.div`
-  color: var(--accent-secondary);
+  color: var(--text-secondary);
   font-size: 10px;
   font-weight: 500;
   line-height: normal;
@@ -393,7 +408,7 @@ export const CalendarCell = styled.div`
   flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
-  color: var(--accent-secondary);
+  color: var(--text-secondary);
   font-size: 10px;
   line-height: 1;
   letter-spacing: -0.2px;
@@ -408,7 +423,7 @@ export const CalendarCell = styled.div`
   /* Эффект при наведении */
   &:hover {
     color: var(--accent-secondary);
-    background-color: var(--bg-tertiary);
+    background-color: var(--bg-tertiary0);
   }
 
   /* Стили для дней из других месяцев */
@@ -429,13 +444,13 @@ export const CalendarCell = styled.div`
   /* Стили для выбранного дня */
   &._selected {
     background-color: var(--accent-secondary);
-    color: var(--text-primary);
+    color: var(--bg-secondary);
   }
 
   /* Стили для активного дня */
   &._active-day {
     background-color: var(--accent-secondary);
-    color: var(--text-primary);
+    color: var(--bg-secondary);
   }
 `;
 
@@ -470,7 +485,23 @@ export const DatePickValue = styled.input`
 
 // Вспомогательные классы
 export const HideElement = styled.div`
-  display: none;
+  width: auto;
+  height: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 14px 10px 14px;
+  box-sizing: border-box;
+  border: 0.7px solid var(--border-primary);
+  border-radius: 24px;
+
+  color: rgba(148, 166, 190, 1);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 10px;
+  letter-spacing: -1%;
+  text-align: center;
 `;
 
 export const OrangeTheme = styled.div`
@@ -495,14 +526,14 @@ export const GrayTheme = styled.div`
   justify-content: center;
   align-items: center;
   padding: 10px 14px 10px 14px;
-  background: var(--accent-secondary);
+  background: rgba(148, 166, 190, 1);
   border-radius: 24px;
-  color: #000000;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 10px;
-  letter-spacing: 0%;
-  text-align: center;
+    color: rgba(255, 255, 255, 1);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 10px;
+    letter-spacing: 0%;
+    text-align: center;
 `;
 
 export const ActiveCategory = styled.div`

@@ -27,7 +27,7 @@ export const ColumnTitle = styled.div`
   margin: 15px 0;
 
   p {
-    color: #94a6be;
+    color: var(--text-secondary);
     font-size: 14px;
     font-weight: 600;
     line-height: 1;
@@ -69,7 +69,7 @@ export const CardsItem = styled.div`
 export const Card = styled.div`
   width: 220px;
   height: 130px;
-  background-color: #ffffff;
+  background-color: var(--bg-secondary);
   border-radius: 10px;
   display: flex;
   flex-direction: column;
@@ -109,13 +109,13 @@ export const CardTheme = styled.div`
   background-color: ${(props) => {
     switch (props.themeColor) {
       case "orange":
-        return "#FFE4C2";
+        return "var(--orange-bg)";
       case "green":
-        return "#B4FDD1";
+        return "var(--green-bg)";
       case "purple":
-        return "#E9D4FF";
+        return "var(--purple-bg)";
       case "gray":
-        return "#94A6BE";
+        return "var(--gray-bg)";
       default:
         return "#EAEEF6";
     }
@@ -123,13 +123,13 @@ export const CardTheme = styled.div`
   color: ${(props) => {
     switch (props.themeColor) {
       case "orange":
-        return "#FF6D00";
+        return "var(--orange-text)";
       case "green":
-        return "#06B16E";
+        return "var(--green-text)";
       case "purple":
-        return "#9A48F1";
+        return "var(--purple-text)";
       case "gray":
-        return "#FFFFFF";
+        return "var(--gray-text)";
       default:
         return "#000000";
     }
@@ -159,7 +159,7 @@ export const CardButton = styled.div`
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background-color: #94a6be;
+    background-color: var(--accent-secondary);
   }
 `;
 
@@ -171,7 +171,7 @@ export const CardTitle = styled.h3`
   font-size: 14px;
   font-weight: 500;
   line-height: 18px;
-  color: #000000;
+  color: var(--text-primary);
   margin-bottom: 10px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -202,14 +202,14 @@ export const CardDate = styled.div`
 
   svg {
     width: 13px;
-    fill: #94a6be;
+    fill: var(--text-secondary);
   }
 
   p {
     margin-left: 6px;
     font-size: 10px;
     line-height: 13px;
-    color: #94a6be;
+    color: var(--text-secondary);
     letter-spacing: 0.2px;
   }
 `;

@@ -1,4 +1,6 @@
-import React from "react";
+// CardsItem.jsx
+import React, { useState, useRef } from "react";
+import { GlobalStyle } from "../../Global.style.js";
 import {
   CardsItemContainer,
   Card,
@@ -16,41 +18,97 @@ import {
   DateText,
 } from "./CardsItem.style";
 
-/**
- * Компонент карточки задачи
- * Отображает отдельную задачу с темой, заголовком и датой
- * Включает кнопку действий для открытия подробной информации
- *
- * @param {Object} props - Свойства компонента
- * @param {Object} props.card - Объект с данными карточки
- * @param {string} props.card.id - Уникальный идентификатор карточки
- * @param {string} props.card.topic - Тема/категория карточки
- * @param {string} props.card.themeClass - CSS класс для стилизации темы
- * @param {string} props.card.title - Заголовок задачи
- * @param {string} props.card.date - Дата выполнения задачи
- * @returns {JSX.Element} Карточка задачи
- */
-const CardsItem = ({ card, onTaskClick }) => {
+const CardsItem = ({ card, onTaskClick, isBeingDragged = false }) => {
+  const [isDragging, setIsDragging] = useState(false);
+  // Состояние для отслеживания наведения курсора и удерживания ЛКМ
+  const [isHoveredWithLMB, setIsHoveredWithLMB] = useState(false);
+
+  // Референс для таймера (для оптимизации производительности)
+  const mouseDownTimerRef = useRef(null);
+
+  // Обработчик клика по карточке
   const handleCardClick = (e) => {
     e.preventDefault();
-    if (onTaskClick) {
-      onTaskClick(card.id); // Вызываем функцию с ID задачи
+    if (onTaskClick && !isDragging) {
+      onTaskClick(card.id);
     }
   };
 
+  // Обработчик клика по кнопке
   const handleButtonClick = (e) => {
     e.preventDefault();
-    e.stopPropagation(); // Останавливаем всплытие, чтобы не срабатывал клик по карточке
+    e.stopPropagation();
     if (onTaskClick) {
-      onTaskClick(card.id); // Вызываем функцию с ID задачи
+      onTaskClick(card.id);
     }
   };
+
+  // Обработчик начала перетаскивания
+  const handleDragStart = (e) => {
+    setIsDragging(true);
+    e.dataTransfer.setData("text/plain", card.id);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  // Обработчик окончания перетаскивания
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  // Обработчик наведения курсора на элемент
+  const handleMouseEnter = (e) => {
+    // Проверяем, нажата ли левая кнопка мыши (buttons === 1)
+    if (e.buttons === 1) {
+      setIsHoveredWithLMB(true);
+      // Здесь можно добавить дополнительную логику при наведении с зажатой ЛКМ
+      console.log("Курсор наведен и удерживается ЛКМ");
+    }
+  };
+
+  // Обработчик ухода курсора с элемента
+  const handleMouseLeave = () => {
+    setIsHoveredWithLMB(false);
+    console.log("Курсор наведен и удерживается ЛКМ");
+  };
+
+  // Обработчик нажатия кнопки мыши
+  const handleMouseDown = (e) => {
+    // Проверяем, что нажата именно левая кнопка мыши (button === 0)
+    if (e.button === 0) {
+      // Устанавливаем состояние, что ЛКМ нажата на этом элементе
+      setIsHoveredWithLMB(true);
+      console.log("ЛКМ нажата на карточке");
+    }
+  };
+
+  // Обработчик отпускания кнопки мыши
+  const handleMouseUp = () => {
+    setIsHoveredWithLMB(false);
+  };
+
   return (
-    <CardsItemContainer onClick={handleCardClick} style={{ cursor: 'pointer' }}>
+    <>
+    <GlobalStyle />
+    <CardsItemContainer
+      onClick={handleCardClick}
+      // Добавляем обработчики мыши
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      style={{
+        cursor: isDragging ? "grabbing" : "grab",
+        // Убираем display: "none" - скрытие управляется из MainColumn
+        opacity: isBeingDragged ? 0 : 1,
+        visibility: isBeingDragged ? "hidden" : "visible",
+        transition: "opacity 0.2s ease",
+      }}
+      draggable
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
       <Card>
-        {/* Верхняя группа: тема и кнопка действий */}
         <CardGroup>
-          {/* Бейдж темы/категории задачи */}
           <CardTheme
             className={`card__theme ${card.themeClass}`}
             $themeClass={card.themeClass}
@@ -60,8 +118,11 @@ const CardsItem = ({ card, onTaskClick }) => {
             </CardThemeText>
           </CardTheme>
 
-          {/* Кнопка действий (троеточие) */}
-          <CardButton href="#popBrowse" target="_self" onClick={handleButtonClick}>
+          <CardButton
+            href="#popBrowse"
+            target="_self"
+            onClick={handleButtonClick}
+          >
             <CardButtonInner className="card__btn">
               <CardButtonDot></CardButtonDot>
               <CardButtonDot></CardButtonDot>
@@ -70,14 +131,15 @@ const CardsItem = ({ card, onTaskClick }) => {
           </CardButton>
         </CardGroup>
 
-        {/* Основное содержимое карточки */}
         <CardContent>
-          {/* Заголовок задачи как ссылка */}
-          <CardTitleLink href="" target="_blank" onClick={(e) => e.preventDefault()}>
+          <CardTitleLink
+            href=""
+            target="_blank"
+            onClick={(e) => e.preventDefault()}
+          >
             <CardTitle>{card.title}</CardTitle>
           </CardTitleLink>
 
-          {/* Блок с датой выполнения */}
           <CardDate>
             <CalendarIcon
               xmlns="http://www.w3.org/2000/svg"
@@ -107,11 +169,13 @@ const CardsItem = ({ card, onTaskClick }) => {
                 </clipPath>
               </defs>
             </CalendarIcon>
-            <DateText>{card.date}</DateText>
+            {/* Используем formattedDate для отображения */}
+            <DateText>{card.formattedDate || card.date}</DateText>
           </CardDate>
         </CardContent>
       </Card>
     </CardsItemContainer>
+    </>
   );
 };
 

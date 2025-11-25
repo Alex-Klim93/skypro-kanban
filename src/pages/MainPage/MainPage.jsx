@@ -1,69 +1,143 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, Outlet, useParams, useLocation } from "react-router-dom";
 import Header from "../../components/Header/Header.jsx";
 import Main from "../../components/Main/Main.jsx";
 import PopBrowse from "../../components/PopBrowse/PopBrowse.jsx";
+import PopBrowseEdit from "../../components/PopBrowseEdit/PopBrowseEdit.jsx";
 import PopExit from "../../components/PopExit/PopExit.jsx";
 import PopNewCard from "../../components/PopNewCard/PopNewCard.jsx";
+import HeaderPopUserSet from "../../components/HeaderPopUserSet/HeaderPopUserSet.jsx";
 
-function MainPage() {
-  const [showExit, setShowExit] = useState(false);
-  const [showNewCard, setShowNewCard] = useState(false);
-  const [showBrowse, setShowBrowse] = useState(false);
-  const [selectedCardId, setSelectedCardId] = useState(null);
+function MainPage({ onLogout }) {
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const params = useParams();
 
-  // При монтировании проверяем есть ли task в URL
-  useEffect(() => {
-    const taskId = searchParams.get("task");
-    if (taskId) {
-      setSelectedCardId(taskId);
-      setShowBrowse(true);
-    }
-  }, [searchParams]);
+  // Определяем, какое модальное окно открыто
+  const showExit = location.pathname === "/exit";
+  const showNewCard = location.pathname === "/new-task";
+  const showBrowse =
+    location.pathname.startsWith("/task/") &&
+    !location.pathname.includes("/edit");
+  const showBrowseEdit = location.pathname.includes("/edit");
+  const showUserSettings = location.pathname === "/user-settings";
+
+  // ✅ Функция для обновления списка задач (только один запрос)
+  const handleRefreshTasks = () => {
+    setRefreshTrigger((prev) => prev + 1);
+  };
 
   const handleOpenExit = () => {
-    setShowExit(true);
+    navigate("/exit");
   };
 
   const handleCloseExit = () => {
-    setShowExit(false);
+    navigate("/");
   };
 
   const handleOpenNewCard = () => {
-    setShowNewCard(true);
+    navigate("/new-task");
   };
 
   const handleCloseNewCard = () => {
-    setShowNewCard(false);
+    navigate("/");
+  };
+
+  const handleCloseUserSettings = () => {
+    navigate("/");
+  };
+
+  const handleTaskCreated = () => {
+    console.log("✅ Задача создана, обновляем список");
+    handleRefreshTasks();
+    handleCloseNewCard();
   };
 
   const handleOpenBrowse = (taskId) => {
-    setSelectedCardId(taskId);
-    setShowBrowse(true);
-    // Добавляем ID задачи в URL
-    navigate(`/?id=${taskId}`, { replace: true });
+    navigate(`/task/${taskId}`);
   };
 
   const handleCloseBrowse = () => {
-    setShowBrowse(false);
-    setSelectedCardId(null);
-    // Убираем параметр задачи из URL при закрытии
-    navigate("/", { replace: true });
+    navigate("/");
+  };
+
+  const handleEditTask = (card) => {
+    navigate(`/task/${card._id}/edit`);
+  };
+
+  const handleCloseBrowseEdit = () => {
+    // Возвращаемся к просмотру задачи или закрываем полностью
+    if (params.id) {
+      navigate(`/task/${params.id}`);
+    } else {
+      navigate("/");
+    }
+  };
+
+  const handleTaskUpdated = () => {
+    console.log("✅ Задача обновлена, обновляем список");
+    handleRefreshTasks();
+    // Возвращаемся к просмотру задачи после редактирования
+    if (params.id) {
+      navigate(`/task/${params.id}`);
+    }
   };
 
   return (
     <>
-      <PopExit isOpenExit={showExit} onClose={handleCloseExit} />
-      <PopNewCard isOpen={showNewCard} onClose={handleCloseNewCard} />
-      <PopBrowse
-        isOpen={showBrowse}
-        onClose={handleCloseBrowse}
-        cardId={selectedCardId}
-      />
+      {/* Модальные окна, которые рендерятся через роутинг */}
+      {showExit && (
+        <PopExit
+          isOpenExit={true}
+          onClose={handleCloseExit}
+          onLogout={onLogout}
+        />
+      )}
+
+      {showNewCard && (
+        <PopNewCard
+          isOpen={true}
+          onClose={handleCloseNewCard}
+          onTaskCreated={handleTaskCreated}
+        />
+      )}
+
+      {showBrowse && params.id && (
+        <PopBrowse
+          isOpen={true}
+          onClose={handleCloseBrowse}
+          setRefreshTrigger={setRefreshTrigger}
+        />
+      )}
+
+      {showBrowseEdit && params.id && (
+        <PopBrowseEdit
+          isOpen={true}
+          onClose={handleCloseBrowseEdit}
+          setRefreshTrigger={setRefreshTrigger}
+          onTaskUpdated={handleTaskUpdated}
+        />
+      )}
+
+      {showUserSettings && (
+        <HeaderPopUserSet
+          isOpen={true}
+          onClose={handleCloseUserSettings}
+          onExitClick={handleOpenExit}
+        />
+      )}
+
+      {/* Основной контент */}
       <Header onExitClick={handleOpenExit} onAddTaskClick={handleOpenNewCard} />
-      <Main onTaskClick={handleOpenBrowse} />
+      <Main
+        onTaskClick={handleOpenBrowse}
+        refreshTrigger={refreshTrigger}
+        setRefreshTrigger={setRefreshTrigger}
+      />
+
+      {/* Outlet для вложенных маршрутов */}
+      <Outlet />
     </>
   );
 }

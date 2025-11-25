@@ -1,93 +1,62 @@
-export const cardList = [
-    {
-        id: 1,
-        topic: "Web Design",
-        title: "Название задачи",
-        date: "30.10.23",
-        status: "Без статуса",
-        themeClass: "_orange"
-    },
-    {
-        id: 2,
-        topic: "Research",
-        title: "Название задачи",
-        date: "20.11.23",
-        status: "Без статуса",
-        themeClass: "_green"
-    },
-    {
-        id: 3,
-        topic: "Web Design",
-        title: "Название задачи",
-        date: "20.11.23",
-        status: "Без статуса",
-        themeClass: "_orange"
-    },
-    {
-        id: 4,
-        topic: "Copywriting",
-        title: "Название задачи",
-        date: "20.11.23",
-        status: "Без статуса",
-        themeClass: "_purple"
-    },
-    {
-        id: 5,
-        topic: "Research",
-        title: "Название задачи",
-        date: "20.11.23",
-        status: "Без статуса",
-        themeClass: "_green"
-    },
-    {
-        id: 6,
-        topic: "Research",
-        title: "Название задачи",
-        date: "01.11.23",
-        status: "Нужно сделать",
-        themeClass: "_green"
-    },
-    {
-        id: 7,
-        topic: "Research",
-        title: "Название задачи",
-        date: "05.11.23",
-        status: "В работе",
-        themeClass: "_green"
-    },
-    {
-        id: 8,
-        topic: "Copywriting",
-        title: "Название задачи",
-        date: "25.11.23",
-        status: "В работе",
-        themeClass: "_purple"
-    },
-    {
-        id: 9,
-        topic: "Web Design",
-        title: "Название задачи",
-        date: "25.11.23",
-        status: "В работе",
-        themeClass: "_orange"
-    },
+// data.js
+import { api } from "./api/api.js";
 
-    {
-        id: 10,
-        topic: "Research",
-        title: "Название задачи",
-        date: "10.11.23",
-        status: "Тестирование",
-        themeClass: "_green"
-    },
-    {
-        id: 11,
-        topic: "Research",
-        title: "Название задачи",
-        date: "15.11.23",
-        status: "Готово",
-        themeClass: "_green"
-    },
-    
-    
-];
+export let cardList = [];
+
+export async function loadTasksFromServer() {
+  try {
+    console.log("🔄 Загрузка задач с сервера...");
+    const data = await api.getTasks();
+
+    // Преобразуем данные с сервера
+    cardList = data.tasks.map((task) => ({
+      id: task._id,
+      _id: task._id,
+      userId: task.userId,
+      title: task.title,
+      topic: task.topic,
+      date: task.date, // Оставляем оригинальную дату в ISO формате
+      description: task.description,
+      status: task.status, // ✅ Сохраняем актуальный статус из API
+      themeClass: getThemeClass(task.topic),
+      // Добавляем отформатированную дату только для отображения
+      formattedDate: formatDateForDisplay(task.date),
+    }));
+
+    console.log(
+      "✅ Задачи загружены со статусами:",
+      cardList.map((task) => ({
+        title: task.title,
+        status: task.status,
+      }))
+    );
+    return cardList;
+  } catch (error) {
+    console.error("❌ Ошибка загрузки задач:", error);
+    cardList = [];
+    return cardList;
+  }
+}
+
+// Функция для форматирования даты только для отображения
+function formatDateForDisplay(dateString) {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  } catch (error) {
+    return dateString;
+  }
+}
+
+function getThemeClass(topic) {
+  const themeMap = {
+    "Web Design": "_orange",
+    Research: "_green",
+    Copywriting: "_purple",
+  };
+  return themeMap[topic] || "_gray";
+}
