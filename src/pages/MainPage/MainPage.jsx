@@ -9,7 +9,6 @@ import PopNewCard from "../../components/PopNewCard/PopNewCard.jsx";
 import HeaderPopUserSet from "../../components/HeaderPopUserSet/HeaderPopUserSet.jsx";
 
 function MainPage({ onLogout }) {
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams();
@@ -22,10 +21,6 @@ function MainPage({ onLogout }) {
     !location.pathname.includes("/edit");
   const showBrowseEdit = location.pathname.includes("/edit");
   const showUserSettings = location.pathname === "/user-settings";
-
-  const handleRefreshTasks = () => {
-    setRefreshTrigger((prev) => prev + 1);
-  };
 
   const handleOpenExit = () => {
     navigate("/exit");
@@ -52,8 +47,7 @@ function MainPage({ onLogout }) {
   };
 
   const handleTaskCreated = () => {
-    console.log("✅ Задача создана, обновляем список");
-    handleRefreshTasks();
+    console.log("✅ Задача создана");
     handleCloseNewCard();
   };
 
@@ -78,8 +72,7 @@ function MainPage({ onLogout }) {
   };
 
   const handleTaskUpdated = () => {
-    console.log("✅ Задача обновлена, обновляем список");
-    handleRefreshTasks();
+    console.log("✅ Задача обновлена");
     if (params.id) {
       navigate(`/task/${params.id}`);
     }
@@ -136,7 +129,7 @@ function MainPage({ onLogout }) {
         onAddTaskClick={handleOpenNewCard}
         onUserSettingsClick={handleOpenUserSettings}
       />
-      <Main onTaskClick={handleOpenBrowse} refreshTrigger={refreshTrigger} />
+      <Main onTaskClick={handleOpenBrowse} />
 
       <Outlet />
     </>

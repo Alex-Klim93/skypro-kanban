@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AuthContext } from "./AuthContext";
 
 // Базовые URL API
@@ -9,7 +9,7 @@ const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Функция для выполнения запросов
-  const makeRequest = async (url, options = {}) => {
+  const makeRequest = useCallback(async (url, options = {}) => {
     const headers = {
       ...options.headers,
     };
@@ -57,53 +57,35 @@ const AuthProvider = ({ children }) => {
       console.error("API request failed:", error);
       throw error;
     }
-  };
+  }, []);
 
   // Функция для сохранения/удаления токена
-  const setToken = (token) => {
+  const setToken = useCallback((token) => {
     if (token) {
       localStorage.setItem("userToken", token);
     } else {
       localStorage.removeItem("userToken");
       localStorage.removeItem("currentUser");
     }
-  };
+  }, []);
 
   // Функция для сохранения данных пользователя
-  const setCurrentUser = (userData) => {
+  const setCurrentUser = useCallback((userData) => {
     if (userData) {
       localStorage.setItem("currentUser", JSON.stringify(userData));
     } else {
       localStorage.removeItem("currentUser");
     }
-  };
+  }, []);
 
   // Проверка авторизации при загрузке
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     const token = localStorage.getItem("userToken");
     const storedUser = localStorage.getItem("currentUser");
 
     if (token && storedUser) {
       try {
         const userData = JSON.parse(storedUser);
-
-        // Проверяем валидность токена
-        try {
-          await makeRequest(`${USERS_API_BASE_URL}/login`, {
-            method: "POST",
-            body: {
-              login: userData.login,
-              password: "dummy", // Отправляем фиктивный пароль для проверки токена
-            },
-          });
-        } catch (error) {
-          // Если токен невалиден, разлогиниваем
-          if (error.message.includes("400")) {
-            logout();
-            return false;
-          }
-        }
-
         setUser(userData);
         return true;
       } catch (error) {
@@ -113,7 +95,7 @@ const AuthProvider = ({ children }) => {
       }
     }
     return false;
-  };
+  }, []);
 
   // Инициализация авторизации
   useEffect(() => {
@@ -130,7 +112,7 @@ const AuthProvider = ({ children }) => {
     };
 
     initializeAuth();
-  }, []);
+  }, [checkAuth]);
 
   // Функция входа - согласно документации
   const login = async (loginData) => {
@@ -188,13 +170,13 @@ const AuthProvider = ({ children }) => {
   };
 
   // Функция выхода
-  const logout = () => {
+  const logout = useCallback(() => {
     setToken(null);
     setCurrentUser(null);
     setUser(null);
     console.log("✅ Выход выполнен");
     return true;
-  };
+  }, [setToken, setCurrentUser]);
 
   // Функция регистрации - согласно документации
   const register = async (registerData) => {

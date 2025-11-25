@@ -1,5 +1,4 @@
-// PopBrowse.jsx
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   PopBrowseContainer,
@@ -245,6 +244,7 @@ function PopBrowse({ isOpen, onClose, cardId, onEdit }) {
   }
 
   return (
+    // ✅ ИСПРАВЛЕНО: убран проп isOpen из DOM элемента
     <PopBrowseContainer $isOpen={isOpen} id="popBrowse">
       <PopBrowseInner>
         <PopBrowseBlock>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import {
   PopBrowseContainer,
   PopBrowseInner,
@@ -227,7 +227,8 @@ function PopBrowseEdit({ isOpen, onClose, cardId, onTaskUpdated }) {
             {/* Верхний блок с заголовком и категорией */}
             <PopBrowseTopBlock>
               <PopBrowseTitle>
-                <input className={"PopBrowseTitle"}
+                <input
+                  className={"PopBrowseTitle"}
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}

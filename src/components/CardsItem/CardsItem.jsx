@@ -109,9 +109,9 @@ const CardsItem = ({ card, onTaskClick, isBeingDragged = false }) => {
     >
       <Card>
         <CardGroup>
+          {/* ✅ ИСПРАВЛЕНО: убран проп $themeClass из DOM элемента */}
           <CardTheme
             className={`card__theme ${card.themeClass}`}
-            $themeClass={card.themeClass}
           >
             <CardThemeText className={card.themeClass}>
               {card.topic}

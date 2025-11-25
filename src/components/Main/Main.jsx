@@ -1,5 +1,4 @@
 // Main.jsx
-import { useContext } from "react";
 import MainColumn from "../MainColumn/MainColumn.jsx";
 import { GlobalStyle } from "../../Global.style.js";
 import {
@@ -14,7 +13,6 @@ import { useTaskData } from "../../data.js";
 import { AuthContext } from "../../context/AuthContext";
 
 function Main({ onTaskClick }) {
-  const { user } = useContext(AuthContext);
 
   // ✅ ИСПРАВЛЕНО: используем TaskContext через хук useTaskData
   const { cardList: tasks, isLoading, error } = useTaskData();

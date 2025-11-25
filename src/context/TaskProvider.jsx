@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect, useRef } from "react";
+import { useState, useContext, useEffect, useRef, useCallback } from "react";
 import { TaskContext } from "./TaskContext";
 import { AuthContext } from "./AuthContext";
 
@@ -11,8 +11,7 @@ export const TaskProvider = ({ children }) => {
   const KANBAN_API_BASE_URL = "https://wedev-api.sky.pro/api/kanban";
 
   // Референсы для предотвращения бесконечных циклов
-  const isMountedRef = useRef(false);
-  const lastUserTokenRef = useRef(null);
+  const isInitialLoadRef = useRef(false);
 
   // Функция для выполнения запросов задач
   const makeTaskRequest = async (url, options = {}) => {
@@ -36,7 +35,7 @@ export const TaskProvider = ({ children }) => {
   };
 
   // Загрузка задач - согласно документации
-  const loadTasks = async () => {
+  const loadTasks = useCallback(async () => {
     if (!user?.token) {
       console.log("❌ TaskProvider: Пользователь не авторизован");
       setTasks([]);
@@ -87,7 +86,7 @@ export const TaskProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user?.token, isLoading, makeTaskRequest]);
 
   // Добавление задачи - согласно документации
   const addTask = async (taskData) => {
@@ -199,34 +198,26 @@ export const TaskProvider = ({ children }) => {
     }
   };
 
-  // Автоматическая загрузка задач при изменении пользователя
-  useEffect(() => {
-    if (!isMountedRef.current) {
-      isMountedRef.current = true;
-      return;
-    }
-
-    const currentToken = user?.token;
-
-    // Загружаем задачи только если токен изменился
-    if (currentToken && currentToken !== lastUserTokenRef.current) {
-      console.log("🔍 TaskProvider: Токен изменился, загружаем задачи");
-      lastUserTokenRef.current = currentToken;
-      loadTasks();
-    } else if (!currentToken && lastUserTokenRef.current) {
-      console.log("🛑 TaskProvider: Пользователь вышел, очистка задач");
-      lastUserTokenRef.current = null;
-      setTasks([]);
-    }
-  }, [user?.token]);
+  // ИСПРАВЛЕНО: Убрана автоматическая загрузка задач при изменении пользователя
+  // Теперь задачи загружаются только при монтировании или явном вызове loadTasks
 
   // Загрузка задач при монтировании, если пользователь авторизован
   useEffect(() => {
-    if (user?.token && !isMountedRef.current) {
+    if (user?.token && !isInitialLoadRef.current) {
       console.log("🚀 TaskProvider: Первоначальная загрузка задач");
+      isInitialLoadRef.current = true;
       loadTasks();
     }
-  }, []);
+  }, [user?.token, loadTasks]);
+
+  // Очистка задач при выходе пользователя
+  useEffect(() => {
+    if (!user?.token && isInitialLoadRef.current) {
+      console.log("🛑 TaskProvider: Пользователь вышел, очистка задач");
+      setTasks([]);
+      isInitialLoadRef.current = false;
+    }
+  }, [user?.token]);
 
   const value = {
     tasks,
@@ -252,7 +243,7 @@ function formatDateForDisplay(dateString) {
       month: "2-digit",
       year: "numeric",
     });
-  } catch (error) {
+  } catch {
     return dateString;
   }
 }

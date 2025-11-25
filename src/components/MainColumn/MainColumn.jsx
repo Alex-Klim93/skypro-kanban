@@ -16,7 +16,7 @@ function MainColumn({ onTaskClick }) {
   ];
 
   const [draggedTask, setDraggedTask] = useState(null);
-  const [dragOverColumn, setDragOverColumn] = useState(null);
+  const [setDragOverColumn] = useState(null);
 
   const handleDragStart = (e, task) => {
     setDraggedTask(task);
@@ -121,7 +121,6 @@ function MainColumn({ onTaskClick }) {
     <>
       {statusColumns.map((status) => {
         const columnTasks = tasks.filter((task) => task.status === status);
-        const isDragOver = dragOverColumn === status;
         const isDragging = !!draggedTask;
 
         return (
