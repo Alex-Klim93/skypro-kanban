@@ -151,7 +151,6 @@ function PopBrowseEdit({ isOpen, onClose, cardId, onTaskUpdated }) {
 
     setIsSaving(true);
     try {
-      console.log("💾 Сохранение изменений задачи:", currentCard.id);
 
       const updatedTaskData = {
         title: title,
@@ -162,7 +161,6 @@ function PopBrowseEdit({ isOpen, onClose, cardId, onTaskUpdated }) {
       };
 
       await updateTask(currentCard.id, updatedTaskData);
-      console.log("✅ Задача успешно обновлена");
 
       if (onTaskUpdated) {
         onTaskUpdated();
@@ -186,9 +184,7 @@ function PopBrowseEdit({ isOpen, onClose, cardId, onTaskUpdated }) {
 
     setIsDeleting(true);
     try {
-      console.log("🗑️ Удаление задачи:", currentCard.id);
       await deleteTask(currentCard.id);
-      console.log("✅ Задача успешно удалена");
       handleClose();
     } catch (error) {
       console.error("❌ Ошибка удаления задачи:", error);

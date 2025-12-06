@@ -22,12 +22,6 @@ function MainColumn({ onTaskClick }) {
     setDraggedTask(task);
     e.dataTransfer.setData("text/plain", task.id);
     e.dataTransfer.effectAllowed = "move";
-    console.log(
-      "🎯 Начало перетаскивания:",
-      task.title,
-      "статус:",
-      task.status
-    );
   };
 
   const handleDragOver = (e, status) => {
@@ -55,10 +49,6 @@ function MainColumn({ onTaskClick }) {
     }
 
     try {
-      console.log(
-        `🔄 Перенос задачи "${draggedTask.title}" из "${draggedTask.status}" в "${newStatus}"`
-      );
-
       const updatedTaskData = {
         title: draggedTask.title,
         topic: draggedTask.topic,
@@ -67,12 +57,9 @@ function MainColumn({ onTaskClick }) {
         date: draggedTask.date,
       };
 
-      console.log("📤 Отправка данных на сервер:", updatedTaskData);
 
       // Обновляем задачу через контекст
       await updateTask(draggedTask.id, updatedTaskData);
-
-      console.log("✅ Статус задачи успешно обновлен на сервере");
     } catch (error) {
       console.error("❌ Ошибка обновления статуса задачи:", error);
       alert(`Не удалось переместить задачу: ${error.message}`);

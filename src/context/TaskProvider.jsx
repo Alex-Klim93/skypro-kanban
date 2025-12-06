@@ -37,22 +37,18 @@ export const TaskProvider = ({ children }) => {
   // Загрузка задач - согласно документации
   const loadTasks = useCallback(async () => {
     if (!user?.token) {
-      console.log("❌ TaskProvider: Пользователь не авторизован");
       setTasks([]);
       return;
     }
 
     // Проверяем, не загружаем ли мы уже задачи
     if (isLoading) {
-      console.log("🔄 TaskProvider: Загрузка уже выполняется, пропускаем");
       return;
     }
 
     try {
       setIsLoading(true);
       setError(null);
-
-      console.log("🔄 TaskProvider: Загрузка задач");
 
       // Согласно документации: GET /api/kanban возвращает { tasks: [...] }
       const data = await makeTaskRequest(KANBAN_API_BASE_URL, {
@@ -78,7 +74,6 @@ export const TaskProvider = ({ children }) => {
       }));
 
       setTasks(formattedTasks);
-      console.log("✅ TaskProvider: Задачи загружены:", formattedTasks.length);
     } catch (err) {
       console.error("❌ TaskProvider: Ошибка загрузки задач:", err);
       setError(err.message);
@@ -91,8 +86,6 @@ export const TaskProvider = ({ children }) => {
   // Добавление задачи - согласно документации
   const addTask = async (taskData) => {
     try {
-      console.log("➕ Добавление задачи:", taskData);
-
       // Согласно документации: POST /api/kanban
       const data = await makeTaskRequest(KANBAN_API_BASE_URL, {
         method: "POST",
@@ -130,7 +123,6 @@ export const TaskProvider = ({ children }) => {
   // Обновление задачи - согласно документации
   const updateTask = async (id, taskData) => {
     try {
-      console.log("🔄 Обновление задачи:", { id, taskData });
 
       // Согласно документации: PUT /api/kanban/:id
       const data = await makeTaskRequest(`${KANBAN_API_BASE_URL}/${id}`, {
@@ -168,7 +160,6 @@ export const TaskProvider = ({ children }) => {
   // Удаление задачи - согласно документации
   const deleteTask = async (id) => {
     try {
-      console.log("🗑️ Удаление задачи:", id);
 
       // Согласно документации: DELETE /api/kanban/:id
       const data = await makeTaskRequest(`${KANBAN_API_BASE_URL}/${id}`, {
@@ -204,7 +195,6 @@ export const TaskProvider = ({ children }) => {
   // Загрузка задач при монтировании, если пользователь авторизован
   useEffect(() => {
     if (user?.token && !isInitialLoadRef.current) {
-      console.log("🚀 TaskProvider: Первоначальная загрузка задач");
       isInitialLoadRef.current = true;
       loadTasks();
     }
@@ -213,7 +203,6 @@ export const TaskProvider = ({ children }) => {
   // Очистка задач при выходе пользователя
   useEffect(() => {
     if (!user?.token && isInitialLoadRef.current) {
-      console.log("🛑 TaskProvider: Пользователь вышел, очистка задач");
       setTasks([]);
       isInitialLoadRef.current = false;
     }

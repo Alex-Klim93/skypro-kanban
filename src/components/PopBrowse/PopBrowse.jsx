@@ -71,7 +71,6 @@ function PopBrowse({ isOpen, onClose, cardId, onEdit }) {
 
       if (card) {
         setCurrentCard(card);
-        console.log("✅ Карточка найдена:", card.title);
 
         // Инициализация календаря с датой из карточки
         if (card.date) {
@@ -150,7 +149,6 @@ function PopBrowse({ isOpen, onClose, cardId, onEdit }) {
   const handleDateSelect = (date) => {
     if (date) {
       setSelectedDate(date);
-      console.log("Выбрана новая дата:", date);
     }
   };
 
@@ -164,7 +162,6 @@ function PopBrowse({ isOpen, onClose, cardId, onEdit }) {
   };
 
   const handleEdit = () => {
-    console.log("🔄 Переход в режим редактирования задачи:", actualCardId);
 
     // Закрываем текущий попап
     if (onClose) {
@@ -188,11 +185,7 @@ function PopBrowse({ isOpen, onClose, cardId, onEdit }) {
 
     setIsDeleting(true);
     try {
-      console.log("🗑️ Удаление задачи:", actualCardId);
-
-      // ✅ Используем deleteTask из TaskContext - он сам обновит задачи
       await deleteTask(actualCardId);
-      console.log("✅ Задача успешно удалена");
 
       // Закрываем попап
       handleClose();

@@ -44,13 +44,11 @@ function ContainerSignup() {
     }
 
     try {
-      console.log("📝 Регистрация пользователя:", { name, login, password });
 
       // Используем реальную функцию register из AuthContext
       const result = await register({ login, name, password });
 
       if (result.success) {
-        console.log("✅ Регистрация успешна через AuthContext");
         setSuccess(true);
 
         setTimeout(() => {

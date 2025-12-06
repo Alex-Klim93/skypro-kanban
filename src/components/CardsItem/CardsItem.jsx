@@ -1,5 +1,5 @@
 // CardsItem.jsx
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { GlobalStyle } from "../../Global.style.js";
 import {
   CardsItemContainer,
@@ -21,10 +21,7 @@ import {
 const CardsItem = ({ card, onTaskClick, isBeingDragged = false }) => {
   const [isDragging, setIsDragging] = useState(false);
   // Состояние для отслеживания наведения курсора и удерживания ЛКМ
-  const [isHoveredWithLMB, setIsHoveredWithLMB] = useState(false);
-
-  // Референс для таймера (для оптимизации производительности)
-  const mouseDownTimerRef = useRef(null);
+  const [ setIsHoveredWithLMB] = useState(false);
 
   // Обработчик клика по карточке
   const handleCardClick = (e) => {
@@ -60,15 +57,12 @@ const CardsItem = ({ card, onTaskClick, isBeingDragged = false }) => {
     // Проверяем, нажата ли левая кнопка мыши (buttons === 1)
     if (e.buttons === 1) {
       setIsHoveredWithLMB(true);
-      // Здесь можно добавить дополнительную логику при наведении с зажатой ЛКМ
-      console.log("Курсор наведен и удерживается ЛКМ");
     }
   };
 
   // Обработчик ухода курсора с элемента
   const handleMouseLeave = () => {
     setIsHoveredWithLMB(false);
-    console.log("Курсор наведен и удерживается ЛКМ");
   };
 
   // Обработчик нажатия кнопки мыши
@@ -77,7 +71,6 @@ const CardsItem = ({ card, onTaskClick, isBeingDragged = false }) => {
     if (e.button === 0) {
       // Устанавливаем состояние, что ЛКМ нажата на этом элементе
       setIsHoveredWithLMB(true);
-      console.log("ЛКМ нажата на карточке");
     }
   };
 

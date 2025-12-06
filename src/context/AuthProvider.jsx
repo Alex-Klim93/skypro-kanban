@@ -1,85 +1,90 @@
 import { useState, useEffect, useCallback } from "react";
 import { AuthContext } from "./AuthContext";
 
-// Базовые URL API
 const USERS_API_BASE_URL = "https://wedev-api.sky.pro/api/user";
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Функция для выполнения запросов
-  const makeRequest = useCallback(async (url, options = {}) => {
+  // Простая функция для запросов - ВОЗВРАЩАЕТ ОБЪЕКТ, НЕ БРОСАЕТ ОШИБКИ
+  const makeRequest = async (url, options = {}) => {
+    const token = localStorage.getItem("userToken");
     const headers = {
+      Authorization: token ? `Bearer ${token}` : undefined,
       ...options.headers,
     };
 
-    // Добавляем токен авторизации, если он есть
-    const token = localStorage.getItem("userToken");
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
+    // Фильтруем undefined заголовки
+    const filteredHeaders = {};
+    for (const [key, value] of Object.entries(headers)) {
+      if (value !== undefined) {
+        filteredHeaders[key] = value;
+      }
     }
 
     const config = {
       ...options,
-      headers,
+      headers: filteredHeaders,
     };
 
-    // Добавляем тело запроса только для методов, которые его поддерживают
-    if (options.body && ["POST", "PUT", "PATCH"].includes(options.method)) {
+    if (options.body) {
       config.body = JSON.stringify(options.body);
     }
 
     try {
       const response = await fetch(url, config);
 
-      // Согласно документации: при успешной авторизации/регистрации возвращается 201
-      if (response.status === 201 || response.status === 200) {
-        const data = await response.json();
-        return data;
+      // Если сервер вернул ошибку 400 (неправильные данные)
+      if (response.status === 400) {
+        const errorData = await response.json().catch(() => ({}));
+        return {
+          error: true,
+          message: errorData.error || "Неверный логин или пароль",
+          status: 400,
+        };
       }
 
+      // Если сервер вернул другую ошибку
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-
-        // Правильно обрабатываем ошибку согласно документации
-        if (response.status === 400) {
-          throw new Error(errorData.error || "Неверный логин или пароль");
-        }
-
-        throw new Error(
-          errorData.error || `HTTP error! status: ${response.status}`
-        );
+        return {
+          error: true,
+          message: errorData.error || `Ошибка ${response.status}`,
+          status: response.status,
+        };
       }
 
+      // Если все ок
       return await response.json();
     } catch (error) {
       console.error("API request failed:", error);
-      throw error;
+      return {
+        error: true,
+        message: "Сетевая ошибка",
+        status: 0,
+      };
     }
-  }, []);
+  };
 
-  // Функция для сохранения/удаления токена
-  const setToken = useCallback((token) => {
+  const setToken = (token) => {
     if (token) {
       localStorage.setItem("userToken", token);
     } else {
       localStorage.removeItem("userToken");
       localStorage.removeItem("currentUser");
     }
-  }, []);
+  };
 
-  // Функция для сохранения данных пользователя
-  const setCurrentUser = useCallback((userData) => {
+  const setCurrentUser = (userData) => {
     if (userData) {
       localStorage.setItem("currentUser", JSON.stringify(userData));
     } else {
       localStorage.removeItem("currentUser");
     }
-  }, []);
+  };
 
-  // Проверка авторизации при загрузке
-  const checkAuth = useCallback(async () => {
+  useEffect(() => {
     const token = localStorage.getItem("userToken");
     const storedUser = localStorage.getItem("currentUser");
 
@@ -87,164 +92,115 @@ const AuthProvider = ({ children }) => {
       try {
         const userData = JSON.parse(storedUser);
         setUser(userData);
-        return true;
       } catch (error) {
-        console.error("❌ Ошибка проверки авторизации:", error);
-        logout();
-        return false;
+        console.error("❌ Ошибка восстановления пользователя:", error);
+        setToken(null);
+        setCurrentUser(null);
       }
     }
-    return false;
+    setIsLoading(false);
   }, []);
 
-  // Инициализация авторизации
-  useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        setIsLoading(true);
-        await checkAuth();
-      } catch (error) {
-        console.error("❌ Ошибка инициализации авторизации:", error);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initializeAuth();
-  }, [checkAuth]);
-
-  // Функция входа - согласно документации
+  // Функция входа - НИКОГДА НЕ БРОСАЕТ ИСКЛЮЧЕНИЙ
   const login = async (loginData) => {
-    try {
-      setIsLoading(true);
-      const { login: username, password } = loginData;
 
-      console.log("🔐 Попытка входа:", { username });
+    setIsLoading(true);
 
-      // Согласно документации: POST /api/user/login
-      const data = await makeRequest(`${USERS_API_BASE_URL}/login`, {
-        method: "POST",
-        body: {
-          login: username,
-          password: password,
-        },
-      });
+    const result = await makeRequest(`${USERS_API_BASE_URL}/login`, {
+      method: "POST",
+      body: {
+        login: loginData.login,
+        password: loginData.password,
+      },
+    });
 
-      console.log("📨 Ответ от сервера при входе:", data);
-
-      // Согласно документации: ответ содержит { user: { ... } }
-      if (data && data.user) {
-        const userData = {
-          id: data.user.id,
-          login: data.user.login,
-          name: data.user.name,
-          token: data.user.token,
-        };
-
-        setToken(data.user.token);
-        setCurrentUser(userData);
-        setUser(userData);
-
-        console.log("✅ Успешный вход:", userData);
-
-        return { success: true, data: data.user };
-      }
-
-      throw new Error("Неверный ответ от сервера");
-    } catch (error) {
-      console.error("❌ Ошибка входа:", error);
-
-      // Очищаем данные при ошибке входа
-      setToken(null);
-      setCurrentUser(null);
-      setUser(null);
-
+    // Если есть ошибка
+    if (result.error) {
+      setIsLoading(false);
       return {
         success: false,
-        error: error.message || "Ошибка входа",
+        error: result.message || "Неверный логин или пароль",
       };
-    } finally {
-      setIsLoading(false);
     }
+
+    // Если успешно
+    if (result && result.user) {
+      const userData = {
+        id: result.user.id,
+        login: result.user.login,
+        name: result.user.name,
+        token: result.user.token,
+      };
+
+      setToken(result.user.token);
+      setCurrentUser(userData);
+      setUser(userData);
+      setIsLoading(false);
+
+      return {
+        success: true,
+        data: result.user,
+      };
+    }
+
+    setIsLoading(false);
+    return {
+      success: false,
+      error: "Неизвестная ошибка",
+    };
   };
 
-  // Функция выхода
-  const logout = useCallback(() => {
+  const logout = () => {
     setToken(null);
     setCurrentUser(null);
     setUser(null);
-    console.log("✅ Выход выполнен");
     return true;
-  }, [setToken, setCurrentUser]);
-
-  // Функция регистрации - согласно документации
-  const register = async (registerData) => {
-    try {
-      setIsLoading(true);
-      const { login: username, name, password } = registerData;
-
-      console.log("📝 Попытка регистрации:", { username, name });
-
-      // Согласно документации: POST /api/user
-      const data = await makeRequest(USERS_API_BASE_URL, {
-        method: "POST",
-        body: {
-          login: username,
-          name: name,
-          password: password,
-        },
-      });
-
-      console.log("📨 Ответ от сервера при регистрации:", data);
-
-      // Согласно документации: ответ содержит { user: { ... } }
-      if (data && data.user) {
-        const userData = {
-          id: data.user.id,
-          login: data.user.login,
-          name: data.user.name,
-          token: data.user.token,
-        };
-
-        setToken(data.user.token);
-        setCurrentUser(userData);
-        setUser(userData);
-
-        console.log("✅ Успешная регистрация:", userData);
-
-        return { success: true, data: data.user };
-      }
-
-      throw new Error("Неверный ответ от сервера");
-    } catch (error) {
-      console.error("❌ Ошибка регистрации:", error);
-
-      // Очищаем данные при ошибке регистрации
-      setToken(null);
-      setCurrentUser(null);
-      setUser(null);
-
-      return {
-        success: false,
-        error: error.message || "Ошибка регистрации",
-      };
-    } finally {
-      setIsLoading(false);
-    }
   };
 
-  // Получение списка пользователей
-  const getUsers = async () => {
-    try {
-      const data = await makeRequest(USERS_API_BASE_URL, {
-        method: "GET",
-      });
-      return data.users || [];
-    } catch (error) {
-      console.error("❌ Ошибка получения пользователей:", error);
-      throw error;
+  const register = async (registerData) => {
+    setIsLoading(true);
+
+    const result = await makeRequest(USERS_API_BASE_URL, {
+      method: "POST",
+      body: {
+        login: registerData.login,
+        name: registerData.name,
+        password: registerData.password,
+      },
+    });
+
+    if (result.error) {
+      setIsLoading(false);
+      return {
+        success: false,
+        error: result.message || "Ошибка регистрации",
+      };
     }
+
+    if (result && result.user) {
+      const userData = {
+        id: result.user.id,
+        login: result.user.login,
+        name: result.user.name,
+        token: result.user.token,
+      };
+
+      setToken(result.user.token);
+      setCurrentUser(userData);
+      setUser(userData);
+      setIsLoading(false);
+
+      return {
+        success: true,
+        data: result.user,
+      };
+    }
+
+    setIsLoading(false);
+    return {
+      success: false,
+      error: "Неизвестная ошибка",
+    };
   };
 
   const value = {
@@ -252,7 +208,6 @@ const AuthProvider = ({ children }) => {
     login,
     logout,
     register,
-    getUsers,
     isAuthenticated: !!user?.token,
     isLoading,
     makeRequest,

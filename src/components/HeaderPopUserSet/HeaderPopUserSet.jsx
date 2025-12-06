@@ -40,7 +40,6 @@ function HeaderPopUserSet({ isOpen, onExitClick, onClose, userButtonRect }) {
 
   // ✅ Обновление данных пользователя
   useEffect(() => {
-    console.log("🔄 Обновление данных пользователя в HeaderPopUserSet:", user);
 
     if (user) {
       if (user.name) {

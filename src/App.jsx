@@ -13,7 +13,6 @@ function App() {
   const { user, logout, isLoading } = useContext(AuthContext);
 
   const handleLogout = () => {
-    console.log("🚪 Выход из системы через AuthContext...");
     logout();
   };
 
@@ -41,21 +40,7 @@ function App() {
     <ThemeProvider>
       <GlobalStyle />
       <Routes>
-        {/* Публичные маршруты */}
-        <Route
-          path="/sign-in"
-          element={
-            isAuthenticated ? <Navigate to="/" replace /> : <ContainerSignin />
-          }
-        />
-        <Route
-          path="/sign-up"
-          element={
-            isAuthenticated ? <Navigate to="/" replace /> : <ContainerSignup />
-          }
-        />
-
-        {/* Защищенные маршруты */}
+        {/* Главная страница - защищенная */}
         <Route
           path="/"
           element={
@@ -74,6 +59,22 @@ function App() {
           <Route path="task/:id/edit" element={null} />
           <Route path="user-settings" element={null} />
         </Route>
+
+        {/* Страница входа - доступна только НЕавторизованным */}
+        <Route
+          path="/sign-in"
+          element={
+            !isAuthenticated ? <ContainerSignin /> : <Navigate to="/" replace />
+          }
+        />
+
+        {/* Страница регистрации - доступна только НЕавторизованным */}
+        <Route
+          path="/sign-up"
+          element={
+            !isAuthenticated ? <ContainerSignup /> : <Navigate to="/" replace />
+          }
+        />
 
         {/* Страница 404 */}
         <Route path="*" element={<NotFoundPage />} />

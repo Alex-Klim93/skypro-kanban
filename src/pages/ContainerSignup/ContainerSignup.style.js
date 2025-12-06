@@ -126,14 +126,14 @@ export const FormGroup = styled.div`
   justify-content: center;
 
   p {
-    color: var(--text-primary);
+    color: var(--text-secondary);
     font-size: 14px;
     line-height: 21px;
     letter-spacing: -0.14px;
     text-align: center;
 
     a {
-      color: var(--text-accent);
+      color: var(--text-secondary);
       font-size: 14px;
       line-height: 21px;
       letter-spacing: -0.14px;

@@ -173,11 +173,8 @@ function PopNewCard({ isOpen, onClose }) {
         date: formData.date,
       };
 
-      console.log("🔄 Отправка данных задачи:", taskData);
-
       // Используем функцию addTask из контекста - она сама обновит задачи
       await addTask(taskData);
-      console.log("✅ Задача создана");
 
       // Сбрасываем форму
       setFormData({

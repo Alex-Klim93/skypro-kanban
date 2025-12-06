@@ -26,16 +26,12 @@ function Header({ onExitClick, onAddTaskClick, onUserSettingsClick }) {
 
   // Обновление данных пользователя
   useEffect(() => {
-    console.log("🔄 Обновление данных пользователя в Header:", user);
 
     if (user && user.name) {
-      console.log("✅ Установлено имя пользователя:", user.name);
       setUserDisplayName(user.name);
     } else if (user && user.login) {
-      console.log("⚠️ Используем логин как имя:", user.login);
       setUserDisplayName(user.login);
     } else {
-      console.log("⚠️ Данные пользователя не найдены");
       setUserDisplayName("Пользователь");
     }
   }, [user]);

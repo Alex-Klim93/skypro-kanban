@@ -9,7 +9,7 @@ import {
   Button,
   FormGroup,
 } from "./ContainerSignin.style.js";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { GlobalStyle } from "../../Global.style.js";
 import { AuthContext } from "../../context/AuthContext";
 
@@ -18,36 +18,35 @@ function ContainerSignin() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
-
-  // Получаем функцию login из контекста
   const { login: authLogin } = useContext(AuthContext);
 
-  const handleTestLogin = () => {
-    setLogin("admin");
-    setPassword("admin");
-  };
-
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+    // 1. УБИРАЕМ ВСЕ preventDefault - пусть форма ведет себя как обычно
+    // e.preventDefault(); // УБИРАЕМ ЭТУ СТРОЧКУ
+
+    if (isLoading) return;
+
     setError("");
 
+    // Проверка полей
+    if (!login.trim()) {
+      setError("Введите логин");
+      return;
+    }
+
+    if (!password.trim()) {
+      setError("Введите пароль");
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
-      console.log("🔐 Попытка входа:", { login, password });
-
-      // Используем реальную функцию login из AuthContext
       const result = await authLogin({ login, password });
-
-      if (result.success) {
-        console.log("✅ Вход успешен через AuthContext");
-        navigate("/");
-      } else {
-        setError(result.error || "Ошибка авторизации");
-      }
+      setError(result.error || "Неверный логин или пароль");
     } catch (err) {
-      console.error("❌ Ошибка входа:", err);
-      setError("Ошибка авторизации. Проверьте данные и попробуйте снова.");
+      console.error("Ошибка:", err);
+      setError("Ошибка соединения с сервером");
     } finally {
       setIsLoading(false);
     }
@@ -63,23 +62,6 @@ function ContainerSignin() {
               <h2>Вход</h2>
             </ModalTitle>
 
-            <div style={{ textAlign: "center", marginBottom: "15px" }}>
-              <button
-                type="button"
-                onClick={handleTestLogin}
-                style={{
-                  background: "transparent",
-                  border: "1px solid #565eef",
-                  color: "#565eef",
-                  padding: "8px 16px",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                Заполнить тестовые данные (admin/admin)
-              </button>
-            </div>
-
             {error && (
               <div
                 style={{
@@ -89,13 +71,15 @@ function ContainerSignin() {
                   padding: "10px",
                   backgroundColor: "#ffe6e6",
                   borderRadius: "4px",
+                  fontSize: "14px",
                 }}
               >
                 {error}
               </div>
             )}
 
-            <Form id="formLogIn" action="#" onSubmit={handleSubmit}>
+            {/* УБИРАЕМ onSubmit у формы */}
+            <Form>
               <Input
                 type="text"
                 name="login"
@@ -104,7 +88,6 @@ function ContainerSignin() {
                 value={login}
                 onChange={(e) => setLogin(e.target.value)}
                 disabled={isLoading}
-                required
               />
               <Input
                 type="password"
@@ -114,13 +97,14 @@ function ContainerSignin() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
-                required
               />
+              {/* МЕНЯЕМ type на "button" и добавляем onClick */}
               <Button
                 className="_hover01"
                 id="btnEnter"
-                type="submit"
+                type="button" // МЕНЯЕМ на button
                 disabled={isLoading}
+                onClick={handleSubmit} // Добавляем обработчик
               >
                 {isLoading ? "Вход..." : "Войти"}
               </Button>

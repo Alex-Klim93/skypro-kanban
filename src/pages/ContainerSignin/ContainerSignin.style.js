@@ -128,14 +128,14 @@ export const FormGroup = styled.div`
   gap: 5px;
 
   p {
-    color: var(--text-primary);
+    color: var(--text-secondary);
     font-size: 14px;
     line-height: 21px;
     letter-spacing: -0.14px;
   }
 
   a {
-    color: var(--text-accent);
+    color: var(--text-secondary);
     font-size: 14px;
     line-height: 21px;
     letter-spacing: -0.14px;

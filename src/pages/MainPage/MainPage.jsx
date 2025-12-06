@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useNavigate, Outlet, useParams, useLocation } from "react-router-dom";
 import Header from "../../components/Header/Header.jsx";
 import Main from "../../components/Main/Main.jsx";
@@ -47,7 +46,6 @@ function MainPage({ onLogout }) {
   };
 
   const handleTaskCreated = () => {
-    console.log("✅ Задача создана");
     handleCloseNewCard();
   };
 
@@ -72,7 +70,6 @@ function MainPage({ onLogout }) {
   };
 
   const handleTaskUpdated = () => {
-    console.log("✅ Задача обновлена");
     if (params.id) {
       navigate(`/task/${params.id}`);
     }
