@@ -20,7 +20,7 @@ function ContainerSignin() {
   const [error, setError] = useState("");
   const { login: authLogin } = useContext(AuthContext);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async () => {
     // 1. УБИРАЕМ ВСЕ preventDefault - пусть форма ведет себя как обычно
     // e.preventDefault(); // УБИРАЕМ ЭТУ СТРОЧКУ
 

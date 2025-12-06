@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { AuthContext } from "./AuthContext";
 
 const USERS_API_BASE_URL = "https://wedev-api.sky.pro/api/user";
