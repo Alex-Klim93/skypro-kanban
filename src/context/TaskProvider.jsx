@@ -6,7 +6,7 @@ export const TaskProvider = ({ children }) => {
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { user, makeRequest, logout, checkAuth } = useContext(AuthContext);
+  const { user, makeRequest, logout } = useContext(AuthContext);
 
   const KANBAN_API_BASE_URL = "https://wedev-api.sky.pro/api/kanban";
 
