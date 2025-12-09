@@ -6,7 +6,7 @@ export const TaskProvider = ({ children }) => {
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { user, makeRequest, logout } = useContext(AuthContext);
+  const { user, makeRequest, logout, checkAuth } = useContext(AuthContext);
 
   const KANBAN_API_BASE_URL = "https://wedev-api.sky.pro/api/kanban";
 
@@ -123,7 +123,6 @@ export const TaskProvider = ({ children }) => {
   // Обновление задачи - согласно документации
   const updateTask = async (id, taskData) => {
     try {
-
       // Согласно документации: PUT /api/kanban/:id
       const data = await makeTaskRequest(`${KANBAN_API_BASE_URL}/${id}`, {
         method: "PUT",
@@ -160,7 +159,6 @@ export const TaskProvider = ({ children }) => {
   // Удаление задачи - согласно документации
   const deleteTask = async (id) => {
     try {
-
       // Согласно документации: DELETE /api/kanban/:id
       const data = await makeTaskRequest(`${KANBAN_API_BASE_URL}/${id}`, {
         method: "DELETE",
@@ -188,9 +186,6 @@ export const TaskProvider = ({ children }) => {
       throw err;
     }
   };
-
-  // ИСПРАВЛЕНО: Убрана автоматическая загрузка задач при изменении пользователя
-  // Теперь задачи загружаются только при монтировании или явном вызове loadTasks
 
   // Загрузка задач при монтировании, если пользователь авторизован
   useEffect(() => {

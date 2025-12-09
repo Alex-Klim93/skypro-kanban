@@ -5,65 +5,65 @@ const USERS_API_BASE_URL = "https://wedev-api.sky.pro/api/user";
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Простая функция для запросов - ВОЗВРАЩАЕТ ОБЪЕКТ, НЕ БРОСАЕТ ОШИБКИ
+  // Проверка авторизации при загрузке
+  const checkAuth = () => {
+    const token = localStorage.getItem("userToken");
+    const storedUser = localStorage.getItem("currentUser");
+
+    if (token && storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+        return true;
+      } catch (error) {
+        console.error("❌ Ошибка восстановления пользователя:", error);
+        localStorage.removeItem("userToken");
+        localStorage.removeItem("currentUser");
+        return false;
+      }
+    }
+    return false;
+  };
+
+  // Упрощенная функция для запросов
   const makeRequest = async (url, options = {}) => {
     const token = localStorage.getItem("userToken");
+
     const headers = {
-      Authorization: token ? `Bearer ${token}` : undefined,
+      ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     };
 
-    // Фильтруем undefined заголовки
-    const filteredHeaders = {};
-    for (const [key, value] of Object.entries(headers)) {
-      if (value !== undefined) {
-        filteredHeaders[key] = value;
-      }
-    }
-
     const config = {
       ...options,
-      headers: filteredHeaders,
+      headers,
     };
 
-    if (options.body) {
+    if (options.body && typeof options.body !== "string") {
       config.body = JSON.stringify(options.body);
     }
 
     try {
       const response = await fetch(url, config);
 
-      // Если сервер вернул ошибку 400 (неправильные данные)
+      // Обрабатываем ошибку 400
       if (response.status === 400) {
         const errorData = await response.json().catch(() => ({}));
-        return {
-          error: true,
-          message: errorData.error || "Неверный логин или пароль",
-          status: 400,
-        };
+        throw new Error(errorData.error || "Неверные данные");
       }
 
-      // Если сервер вернул другую ошибку
+      // Обрабатываем другие ошибки
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        return {
-          error: true,
-          message: errorData.error || `Ошибка ${response.status}`,
-          status: response.status,
-        };
+        throw new Error(errorData.error || `Ошибка ${response.status}`);
       }
 
-      // Если все ок
       return await response.json();
     } catch (error) {
       console.error("API request failed:", error);
-      return {
-        error: true,
-        message: "Сетевая ошибка",
-        status: 0,
-      };
+      throw error;
     }
   };
 
@@ -84,70 +84,54 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+  // Проверяем авторизацию при монтировании компонента
   useEffect(() => {
-    const token = localStorage.getItem("userToken");
-    const storedUser = localStorage.getItem("currentUser");
-
-    if (token && storedUser) {
-      try {
-        const userData = JSON.parse(storedUser);
-        setUser(userData);
-      } catch (error) {
-        console.error("❌ Ошибка восстановления пользователя:", error);
-        setToken(null);
-        setCurrentUser(null);
-      }
-    }
-    setIsLoading(false);
+    checkAuth();
   }, []);
 
-  // Функция входа - НИКОГДА НЕ БРОСАЕТ ИСКЛЮЧЕНИЙ
+  // Функция входа
   const login = async (loginData) => {
-
     setIsLoading(true);
 
-    const result = await makeRequest(`${USERS_API_BASE_URL}/login`, {
-      method: "POST",
-      body: {
-        login: loginData.login,
-        password: loginData.password,
-      },
-    });
+    try {
+      const result = await makeRequest(`${USERS_API_BASE_URL}/login`, {
+        method: "POST",
+        body: {
+          login: loginData.login,
+          password: loginData.password,
+        },
+      });
 
-    // Если есть ошибка
-    if (result.error) {
-      setIsLoading(false);
+      if (result && result.user) {
+        const userData = {
+          id: result.user.id,
+          login: result.user.login,
+          name: result.user.name,
+          token: result.user.token,
+        };
+
+        setToken(result.user.token);
+        setCurrentUser(userData);
+        setUser(userData);
+
+        return {
+          success: true,
+          data: result.user,
+        };
+      }
+
       return {
         success: false,
-        error: result.message || "Неверный логин или пароль",
+        error: "Неизвестная ошибка",
       };
-    }
-
-    // Если успешно
-    if (result && result.user) {
-      const userData = {
-        id: result.user.id,
-        login: result.user.login,
-        name: result.user.name,
-        token: result.user.token,
-      };
-
-      setToken(result.user.token);
-      setCurrentUser(userData);
-      setUser(userData);
-      setIsLoading(false);
-
+    } catch (error) {
       return {
-        success: true,
-        data: result.user,
+        success: false,
+        error: error.message || "Неверный логин или пароль",
       };
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
-    return {
-      success: false,
-      error: "Неизвестная ошибка",
-    };
   };
 
   const logout = () => {
@@ -160,47 +144,46 @@ const AuthProvider = ({ children }) => {
   const register = async (registerData) => {
     setIsLoading(true);
 
-    const result = await makeRequest(USERS_API_BASE_URL, {
-      method: "POST",
-      body: {
-        login: registerData.login,
-        name: registerData.name,
-        password: registerData.password,
-      },
-    });
+    try {
+      const result = await makeRequest(USERS_API_BASE_URL, {
+        method: "POST",
+        body: {
+          login: registerData.login,
+          name: registerData.name,
+          password: registerData.password,
+        },
+      });
 
-    if (result.error) {
-      setIsLoading(false);
+      if (result && result.user) {
+        const userData = {
+          id: result.user.id,
+          login: result.user.login,
+          name: result.user.name,
+          token: result.user.token,
+        };
+
+        setToken(result.user.token);
+        setCurrentUser(userData);
+        setUser(userData);
+
+        return {
+          success: true,
+          data: result.user,
+        };
+      }
+
       return {
         success: false,
-        error: result.message || "Ошибка регистрации",
+        error: "Неизвестная ошибка",
       };
-    }
-
-    if (result && result.user) {
-      const userData = {
-        id: result.user.id,
-        login: result.user.login,
-        name: result.user.name,
-        token: result.user.token,
-      };
-
-      setToken(result.user.token);
-      setCurrentUser(userData);
-      setUser(userData);
-      setIsLoading(false);
-
+    } catch (error) {
       return {
-        success: true,
-        data: result.user,
+        success: false,
+        error: error.message || "Ошибка регистрации",
       };
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
-    return {
-      success: false,
-      error: "Неизвестная ошибка",
-    };
   };
 
   const value = {
@@ -211,6 +194,7 @@ const AuthProvider = ({ children }) => {
     isAuthenticated: !!user?.token,
     isLoading,
     makeRequest,
+    checkAuth,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
