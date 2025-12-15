@@ -1,5 +1,7 @@
+import { useContext, useState, useEffect, useRef } from "react";
 import { useThemeContext } from "../ThemeContext/ThemeContext.jsx";
 import {
+  PopUserSetWrapper,
   PopUserSetContainer,
   PopUserName,
   PopUserMail,
@@ -7,103 +9,103 @@ import {
   ThemeCheckbox,
   PopUserButton,
 } from "./HeaderPopUserSet.style";
-import { currentUser } from "../../api/api.js";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 
-function HeaderPopUserSet({ isOpen, onExitClick, onClose }) {
+function HeaderPopUserSet({ isOpen, onExitClick, onClose, userButtonRect }) {
   const { isDarkTheme, toggleTheme } = useThemeContext();
   const [userName, setUserName] = useState("Пользователь");
   const [userLogin, setUserLogin] = useState("логин");
-  const navigate = useNavigate();
+  const modalRef = useRef(null);
 
-  // ✅ УПРОЩЕНО: получаем данные напрямую из currentUser
-  useEffect(() => {
-    console.log(
-      "🔄 Обновление данных пользователя в HeaderPopUserSet:",
-      currentUser
-    );
+  const { user } = useContext(AuthContext);
 
-    if (currentUser) {
-      if (currentUser.name) {
-        setUserName(currentUser.name);
-      }
-      if (currentUser.login) {
-        setUserLogin(currentUser.login);
-      }
-    }
-  }, [currentUser]);
-
-  const handleExitClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation(); // Предотвращаем всплытие
-    if (onExitClick) {
-      onExitClick();
-    } else {
-      navigate("/exit");
-    }
-  };
-
-  const handleClose = (e) => {
-    e?.preventDefault();
-    e?.stopPropagation(); // Предотвращаем всплытие
-    if (onClose) {
-      onClose();
-    } else {
-      navigate("/");
-    }
-  };
-
-  // Закрытие при клике на затемненную область
+  // ✅ Обработчик клика вне модального окна
   useEffect(() => {
     const handleClickOutside = (event) => {
-      const popup = document.getElementById("user-set-target");
-      const userButton = document.querySelector("[data-user-button]");
-
-      if (
-        popup &&
-        !popup.contains(event.target) &&
-        !userButton?.contains(event.target)
-      ) {
-        handleClose();
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose?.();
       }
     };
 
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "hidden"; // Блокируем скролл
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "unset"; // Восстанавливаем скролл
     };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  // ✅ Обновление данных пользователя
+  useEffect(() => {
+
+    if (user) {
+      if (user.name) {
+        setUserName(user.name);
+      }
+      if (user.login) {
+        setUserLogin(user.login);
+      }
+    }
+  }, [user]);
+
+  const handleExitClick = (e) => {
+    e.preventDefault();
+    if (onExitClick) {
+      onExitClick();
+    }
+  };
+
+  // ✅ Закрытие по клавише Escape
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape") {
+        onClose?.();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("keydown", handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !userButtonRect) return null;
 
   return (
-    <PopUserSetContainer
-      id="user-set-target"
-      $isOpen={isOpen}
-      onClick={(e) => e.stopPropagation()} // Предотвращаем закрытие при клике внутри
+    // ✅ ИСПОЛЬЗУЕМ ПОЗИЦИЮ КНОПКИ ПОЛЬЗОВАТЕЛЯ ДЛЯ ПРИВЯЗКИ
+    <PopUserSetWrapper
+      style={{
+        position: "absolute",
+        top: `${userButtonRect.top + userButtonRect.height + 10}px`, // ✅ СДВИГ ВНИЗ ОТНОСИТЕЛЬНО ИМЕНИ ПОЛЬЗОВАТЕЛЯ
+        right: `${window.innerWidth - userButtonRect.right}px`,
+      }}
     >
-      <PopUserName>{userName}</PopUserName>
-      <PopUserMail>{userLogin}</PopUserMail>
+      <PopUserSetContainer id="user-set-target" $isOpen={isOpen} ref={modalRef}>
+        <PopUserName>{userName}</PopUserName>
+        <PopUserMail>{userLogin}</PopUserMail>
 
-      <PopUserTheme>
-        <label style={{ cursor: "pointer", margin: 0, padding: 0 }}>
-          Темная тема
-        </label>
-        <ThemeCheckbox
-          name="checkbox"
-          checked={isDarkTheme}
-          onChange={() => toggleTheme()}
-        />
-      </PopUserTheme>
+        <PopUserTheme>
+          <label style={{ cursor: "pointer", margin: 0, padding: 0 }}>
+            Темная тема
+          </label>
+          <ThemeCheckbox
+            name="checkbox"
+            checked={isDarkTheme}
+            onChange={() => toggleTheme()}
+          />
+        </PopUserTheme>
 
-      <PopUserButton type="button" onClick={handleExitClick}>
-        Выйти
-      </PopUserButton>
-    </PopUserSetContainer>
+        <PopUserButton type="button" onClick={handleExitClick}>
+          Выйти
+        </PopUserButton>
+      </PopUserSetContainer>
+    </PopUserSetWrapper>
   );
 }
 

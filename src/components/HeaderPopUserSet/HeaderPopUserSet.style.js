@@ -1,14 +1,11 @@
 import styled from "styled-components";
 
+// ✅ ДОБАВЛЕНА ОБЕРТКА ДЛЯ ПОЗИЦИОНИРОВАНИЯ
 export const PopUserSetWrapper = styled.div`
-  position: relative;
-  display: inline-block;
+  z-index: 1000;
 `;
 
 export const PopUserSetContainer = styled.div`
-  position: absolute;
-  top: 100%;
-  right: 0;
   width: 213px;
   height: 205px;
   border-radius: 10px;
@@ -17,8 +14,7 @@ export const PopUserSetContainer = styled.div`
   box-shadow: var(--bg-shaow);
   padding: 34px;
   text-align: center;
-  z-index: 1000;
-  margin-top: 8px;
+  z-index: 2;
   display: ${(props) => (props.$isOpen ? "block" : "none")};
 `;
 

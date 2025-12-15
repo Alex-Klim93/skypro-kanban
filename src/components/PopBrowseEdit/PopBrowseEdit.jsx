@@ -1,8 +1,4 @@
-// PopBrowseEdit.jsx
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { cardList, loadTasksFromServer } from "../../data.js";
-import { api } from "../../api/api.js";
 import {
   PopBrowseContainer,
   PopBrowseInner,
@@ -18,13 +14,10 @@ import {
   StatusParagraph,
   StatusThemes,
   StatusTheme,
-  BrowseButtons,
   EditButtons,
   HideElement,
   OrangeTheme,
   GrayTheme,
-  ActiveCategory,
-  ActiveStatus,
   CalendarContainer,
   CalendarTitle,
   CalendarBlock,
@@ -42,13 +35,14 @@ import {
   CalendarPeriodText,
 } from "./PopBrowseEdit.style";
 
-function PopBrowseEdit({ isOpen, onClose, setRefreshTrigger, onTaskUpdated }) {
-  const navigate = useNavigate();
-  const { id } = useParams(); // Получаем ID из URL параметров
-  const [isMounted, setIsMounted] = useState(false);
+import { useTasks } from "../../context/TaskContext";
+
+function PopBrowseEdit({ isOpen, onClose, cardId, onTaskUpdated }) {
   const [currentCard, setCurrentCard] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const { tasks, updateTask, deleteTask } = useTasks();
 
   // Состояния для редактирования
   const [title, setTitle] = useState("");
@@ -61,16 +55,11 @@ function PopBrowseEdit({ isOpen, onClose, setRefreshTrigger, onTaskUpdated }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState([]);
 
-  // Используем ID из URL параметров
-  const actualCardId = id;
-
+  // Находим карточку по ID
   useEffect(() => {
-    setIsMounted(true);
-
-    if (actualCardId) {
-      // Находим карточку по ID
-      const card = cardList.find(
-        (item) => item.id === actualCardId || item._id === actualCardId
+    if (isOpen && cardId && tasks.length > 0) {
+      const card = tasks.find(
+        (item) => item.id === cardId || item._id === cardId
       );
 
       if (card) {
@@ -85,19 +74,20 @@ function PopBrowseEdit({ isOpen, onClose, setRefreshTrigger, onTaskUpdated }) {
           const cardDate = new Date(card.date);
           setSelectedDate(cardDate);
           setCurrentMonth(cardDate);
+        } else {
+          const today = new Date();
+          setSelectedDate(today);
+          setCurrentMonth(today);
         }
       }
     }
-  }, [actualCardId]);
-
-  // Отдельный эффект для генерации дней календаря
-  useEffect(() => {
-    if (isMounted) {
-      generateCalendarDays();
-    }
-  }, [currentMonth, selectedDate]);
+  }, [isOpen, cardId, tasks]);
 
   // Генерация дней календаря
+  useEffect(() => {
+    generateCalendarDays();
+  }, [currentMonth, selectedDate]);
+
   const generateCalendarDays = () => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
@@ -111,12 +101,12 @@ function PopBrowseEdit({ isOpen, onClose, setRefreshTrigger, onTaskUpdated }) {
     const days = [];
     const today = new Date();
 
-    // Добавляем пустые ячейки для дней предыдущего месяца
+    // Пустые ячейки для дней предыдущего месяца
     for (let i = 0; i < startDay; i++) {
       days.push({ day: null, isCurrentMonth: false });
     }
 
-    // Добавляем дни текущего месяца
+    // Дни текущего месяца
     for (let day = 1; day <= lastDay.getDate(); day++) {
       const date = new Date(year, month, day);
       days.push({
@@ -132,7 +122,6 @@ function PopBrowseEdit({ isOpen, onClose, setRefreshTrigger, onTaskUpdated }) {
     setCalendarDays(days);
   };
 
-  // Навигация по месяцам
   const handlePrevMonth = () => {
     setCurrentMonth(
       new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
@@ -145,20 +134,15 @@ function PopBrowseEdit({ isOpen, onClose, setRefreshTrigger, onTaskUpdated }) {
     );
   };
 
-  // Выбор даты
   const handleDateSelect = (date) => {
     if (date) {
       setSelectedDate(date);
-      console.log("Выбрана новая дата:", date);
     }
   };
 
   const handleClose = () => {
-    // Возвращаемся к просмотру задачи или на главную
-    if (actualCardId) {
-      navigate(`/task/${actualCardId}`);
-    } else {
-      navigate("/");
+    if (onClose) {
+      onClose();
     }
   };
 
@@ -167,35 +151,21 @@ function PopBrowseEdit({ isOpen, onClose, setRefreshTrigger, onTaskUpdated }) {
 
     setIsSaving(true);
     try {
-      console.log("💾 Сохранение изменений задачи:", actualCardId);
-
       const updatedTaskData = {
         title: title,
         topic: topic,
         status: status,
         description: description,
-        date: selectedDate.toISOString(), // Используем выбранную дату
+        date: selectedDate.toISOString(),
       };
 
-      // Обновляем задачу через API
-      await api.updateTask(actualCardId, updatedTaskData);
-      console.log("✅ Задача успешно обновлена");
+      await updateTask(currentCard.id, updatedTaskData);
 
-      // Обновляем локальный список задач
-      await loadTasksFromServer();
-
-      // Триггерим обновление в Main.jsx (один запрос)
-      if (setRefreshTrigger) {
-        setRefreshTrigger((prev) => prev + 1);
-      }
-
-      // Вызываем колбэк обновления задачи
       if (onTaskUpdated) {
         onTaskUpdated();
       }
 
-      // Возвращаемся к просмотру задачи
-      navigate(`/task/${actualCardId}`);
+      handleClose();
     } catch (error) {
       console.error("❌ Ошибка сохранения задачи:", error);
       alert(`Не удалось сохранить изменения: ${error.message}`);
@@ -213,22 +183,8 @@ function PopBrowseEdit({ isOpen, onClose, setRefreshTrigger, onTaskUpdated }) {
 
     setIsDeleting(true);
     try {
-      console.log("🗑️ Удаление задачи:", actualCardId);
-
-      // Удаляем задачу через API
-      await api.deleteTask(actualCardId);
-      console.log("✅ Задача успешно удалена с сервера");
-
-      // Обновляем локальный список задач
-      await loadTasksFromServer();
-
-      // Триггерим обновление в Main.jsx (один запрос)
-      if (setRefreshTrigger) {
-        setRefreshTrigger((prev) => prev + 1);
-      }
-
-      // Возвращаемся на главную
-      navigate("/");
+      await deleteTask(currentCard.id);
+      handleClose();
     } catch (error) {
       console.error("❌ Ошибка удаления задачи:", error);
       alert(`Не удалось удалить задачу: ${error.message}`);
@@ -237,7 +193,6 @@ function PopBrowseEdit({ isOpen, onClose, setRefreshTrigger, onTaskUpdated }) {
     }
   };
 
-  // Форматирование даты для отображения
   const formatDate = (date) => {
     return date.toLocaleDateString("ru-RU", {
       day: "2-digit",
@@ -246,7 +201,6 @@ function PopBrowseEdit({ isOpen, onClose, setRefreshTrigger, onTaskUpdated }) {
     });
   };
 
-  // Форматирование месяца для отображения
   const formatMonth = (date) => {
     return date.toLocaleDateString("ru-RU", {
       month: "long",
@@ -254,24 +208,22 @@ function PopBrowseEdit({ isOpen, onClose, setRefreshTrigger, onTaskUpdated }) {
     });
   };
 
-  // Обработчик выбора статуса
   const handleStatusChange = (newStatus) => {
-    console.log("🔄 Меняем статус с", status, "на", newStatus);
     setStatus(newStatus);
   };
 
-  // Если попап не открыт или не смонтирован, не рендерим его
-  if (!isOpen || !isMounted || !currentCard) return null;
+  if (!isOpen || !currentCard) return null;
 
   return (
-    <PopBrowseContainer isOpen={isOpen} id="popBrowseEdit">
+    <PopBrowseContainer $isOpen={isOpen} id="popBrowseEdit">
       <PopBrowseInner>
         <PopBrowseBlock>
           <PopBrowseContent>
             {/* Верхний блок с заголовком и категорией */}
             <PopBrowseTopBlock>
               <PopBrowseTitle>
-                <input className={"PopBrowseTitle"}
+                <input
+                  className={"PopBrowseTitle"}
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -320,7 +272,6 @@ function PopBrowseEdit({ isOpen, onClose, setRefreshTrigger, onTaskUpdated }) {
               </StatusThemes>
             </StatusBlock>
 
-            {/* Остальной код остается без изменений */}
             <PopBrowseWrap>
               {/* Форма с описанием задачи */}
               <PopBrowseForm id="formEditCard" action="#">
@@ -422,6 +373,14 @@ function PopBrowseEdit({ isOpen, onClose, setRefreshTrigger, onTaskUpdated }) {
                 </CalendarBlock>
               </CalendarContainer>
             </PopBrowseWrap>
+
+            {/* Категория */}
+            <div className="theme-down__categories theme-down">
+              <p className="categories__p subttl">Категория</p>
+              <OrangeTheme className="categories__theme _active-category">
+                <p>{currentCard.topic}</p>
+              </OrangeTheme>
+            </div>
 
             {/* Кнопки редактирования */}
             <EditButtons>

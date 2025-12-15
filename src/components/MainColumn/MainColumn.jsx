@@ -1,15 +1,11 @@
-// MainColumn.jsx
-import { useState, useEffect, useRef } from "react";
+import { useState, useContext } from "react";
 import CardsItem from "../CardsItem/CardsItem.jsx";
 import { Column, ColumnTitle, CardsContainer } from "./MainColumn.style.js";
-import { api } from "../../api/api.js";
+import { TaskContext } from "../../context/TaskContext.js";
 
-function MainColumn({
-  tasks = [],
-  onTaskClick,
-  refreshTrigger,
-  setRefreshTrigger,
-}) {
+function MainColumn({ onTaskClick }) {
+  const { tasks, updateTask } = useContext(TaskContext);
+
   const statusColumns = [
     "Без статуса",
     "Нужно сделать",
@@ -20,23 +16,11 @@ function MainColumn({
 
   const [draggedTask, setDraggedTask] = useState(null);
   const [dragOverColumn, setDragOverColumn] = useState(null);
-  const localTasks = useRef(tasks);
-
-  // Синхронизируем локальные задачи с props
-  useEffect(() => {
-    localTasks.current = tasks;
-  }, [tasks]);
 
   const handleDragStart = (e, task) => {
     setDraggedTask(task);
     e.dataTransfer.setData("text/plain", task.id);
     e.dataTransfer.effectAllowed = "move";
-    console.log(
-      "🎯 Начало перетаскивания:",
-      task.title,
-      "статус:",
-      task.status
-    );
   };
 
   const handleDragOver = (e, status) => {
@@ -64,10 +48,6 @@ function MainColumn({
     }
 
     try {
-      console.log(
-        `🔄 Перенос задачи "${draggedTask.title}" из "${draggedTask.status}" в "${newStatus}"`
-      );
-
       const updatedTaskData = {
         title: draggedTask.title,
         topic: draggedTask.topic,
@@ -76,17 +56,8 @@ function MainColumn({
         date: draggedTask.date,
       };
 
-      console.log("📤 Отправка данных на сервер:", updatedTaskData);
-
-      // Обновляем задачу на сервере
-      await api.updateTask(draggedTask.id, updatedTaskData);
-
-      console.log("✅ Статус задачи успешно обновлен на сервере");
-
-      // Полное обновление данных
-      if (setRefreshTrigger) {
-        setRefreshTrigger((prev) => prev + 1);
-      }
+      // Обновляем задачу через контекст
+      await updateTask(draggedTask.id, updatedTaskData);
     } catch (error) {
       console.error("❌ Ошибка обновления статуса задачи:", error);
       alert(`Не удалось переместить задачу: ${error.message}`);
@@ -95,10 +66,7 @@ function MainColumn({
     }
   };
 
-  // Используем локальные задачи для отображения
-  const displayTasks = localTasks.current;
-
-  if (!displayTasks || displayTasks.length === 0) {
+  if (!tasks || tasks.length === 0) {
     return (
       <Column>
         <ColumnTitle>
@@ -137,10 +105,7 @@ function MainColumn({
   return (
     <>
       {statusColumns.map((status) => {
-        const columnTasks = displayTasks.filter(
-          (task) => task.status === status
-        );
-        const isDragOver = dragOverColumn === status;
+        const columnTasks = tasks.filter((task) => task.status === status);
         const isDragging = !!draggedTask;
 
         return (
@@ -149,10 +114,6 @@ function MainColumn({
             onDragOver={(e) => handleDragOver(e, status)}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, status)}
-            style={{
-              minWidth: "220px",
-              backgroundColor: "transparent",
-            }}
           >
             <ColumnTitle>
               <p>

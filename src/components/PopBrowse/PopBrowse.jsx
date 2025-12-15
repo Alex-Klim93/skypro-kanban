@@ -1,8 +1,5 @@
-// PopBrowse.jsx
-import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { cardList, loadTasksFromServer } from "../../data.js";
-import { api } from "../../api/api.js";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   PopBrowseContainer,
   PopBrowseInner,
@@ -42,128 +39,144 @@ import {
   CalendarPeriodText,
 } from "./PopBrowse.style";
 
-function PopBrowse({ isOpen, onClose, setRefreshTrigger }) {
+// ИСПРАВЛЕНО: импортируем TaskContext для операций с задачами
+import { useTasks } from "../../context/TaskContext";
+
+function PopBrowse({ isOpen, onClose, cardId, onEdit }) {
   const navigate = useNavigate();
-  const { id } = useParams(); // Получаем ID из URL параметров
-  const [isMounted, setIsMounted] = useState(false);
+  const [searchParams] = useSearchParams();
   const [currentCard, setCurrentCard] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // ✅ ИСПРАВЛЕНО: используем TaskContext для операций с задачами
+  const { tasks, deleteTask } = useTasks();
 
   // Состояния для календаря
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState([]);
 
-  // Используем ID из URL параметров
-  const actualCardId = id;
+  // Получаем ID задачи из URL параметров
+  const urlTaskId = searchParams.get("task");
 
-  // Мемоизируем функцию закрытия
-  const handleClose = useCallback(() => {
-    navigate("/"); // Возвращаемся на главную
-  }, [navigate]);
+  // Используем ID из пропсов или из URL параметров
+  const actualCardId = cardId || urlTaskId;
 
-  // Основной эффект для загрузки карточки
+  // ✅ ИСПРАВЛЕНО: используем весь массив tasks вместо tasks.length
   useEffect(() => {
-    setIsMounted(true);
-
-    if (actualCardId) {
-      // Находим карточку по ID в актуальном списке
-      const card = cardList.find(
+    if (isOpen && actualCardId && tasks.length > 0) {
+      const card = tasks.find(
         (item) => item.id === actualCardId || item._id === actualCardId
       );
-      setCurrentCard(card);
 
-      // Если карточка не найдена и попап открыт, закрываем его после монтирования
-      if (!card && isOpen && isMounted) {
-        console.error("Карточка не найдена с ID:", actualCardId);
-        handleClose();
+      if (card) {
+        setCurrentCard(card);
+
+        // Инициализация календаря с датой из карточки
+        if (card.date) {
+          const cardDate = new Date(card.date);
+          setSelectedDate(cardDate);
+          setCurrentMonth(cardDate);
+        }
+      } else {
+        console.error("❌ Карточка не найдена с ID:", actualCardId);
       }
     }
-  }, [actualCardId, isOpen, isMounted, handleClose]);
+  }, [isOpen, actualCardId, tasks]); // ✅ ИСПРАВЛЕНО: используем tasks вместо tasks.length
 
-  // Эффект для инициализации даты из карточки
+  // ✅ ИСПРАВЛЕНО: отдельный эффект для генерации календаря
   useEffect(() => {
-    if (currentCard && currentCard.date) {
-      // Парсим дату из карточки
-      const cardDate = new Date(currentCard.date);
-      setSelectedDate(cardDate);
-      setCurrentMonth(cardDate);
+    if (currentCard) {
+      generateCalendarDays();
     }
-  }, [currentCard]); // Только при изменении currentCard
+  }, [currentMonth, selectedDate, currentCard]);
 
-  // Эффект для генерации дней календаря
-  useEffect(() => {
-    const generateCalendarDays = () => {
-      const year = currentMonth.getFullYear();
-      const month = currentMonth.getMonth();
+  // Генерация дней календаря
+  const generateCalendarDays = () => {
+    if (!currentMonth) return;
 
-      // Первый день месяца
-      const firstDay = new Date(year, month, 1);
-      // Последний день месяца
-      const lastDay = new Date(year, month + 1, 0);
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
 
-      // День недели первого дня (0 - воскресенье, 1 - понедельник, etc.)
-      const firstDayOfWeek = firstDay.getDay();
-      // Корректировка для отображения понедельника первым
-      const startDay = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+    // Первый день месяца
+    const firstDay = new Date(year, month, 1);
+    // Последний день месяца
+    const lastDay = new Date(year, month + 1, 0);
 
-      const days = [];
-      const today = new Date();
+    // День недели первого дня (0 - воскресенье, 1 - понедельник, etc.)
+    const firstDayOfWeek = firstDay.getDay();
+    // Корректировка для отображения понедельника первым
+    const startDay = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
 
-      // Добавляем пустые ячейки для дней предыдущего месяца
-      for (let i = 0; i < startDay; i++) {
-        days.push({ day: null, isCurrentMonth: false });
-      }
+    const days = [];
+    const today = new Date();
 
-      // Добавляем дни текущего месяца
-      for (let day = 1; day <= lastDay.getDate(); day++) {
-        const date = new Date(year, month, day);
-        days.push({
-          day,
-          date,
-          isCurrentMonth: true,
-          isToday: date.toDateString() === today.toDateString(),
-          isSelected: date.toDateString() === selectedDate.toDateString(),
-          isWeekend: date.getDay() === 0 || date.getDay() === 6,
-        });
-      }
+    // Добавляем пустые ячейки для дней предыдущего месяца
+    for (let i = 0; i < startDay; i++) {
+      days.push({ day: null, isCurrentMonth: false });
+    }
 
-      setCalendarDays(days);
-    };
+    // Добавляем дни текущего месяца
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      const date = new Date(year, month, day);
+      days.push({
+        day,
+        date,
+        isCurrentMonth: true,
+        isToday: date.toDateString() === today.toDateString(),
+        isSelected: date.toDateString() === selectedDate.toDateString(),
+        isWeekend: date.getDay() === 0 || date.getDay() === 6,
+      });
+    }
 
-    generateCalendarDays();
-  }, [currentMonth, selectedDate]);
+    setCalendarDays(days);
+  };
 
-  // Мемоизируем обработчики навигации по календарю
-  const handlePrevMonth = useCallback(() => {
+  // Навигация по месяцам
+  const handlePrevMonth = () => {
     setCurrentMonth(
       new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
     );
-  }, [currentMonth]);
+  };
 
-  const handleNextMonth = useCallback(() => {
+  const handleNextMonth = () => {
     setCurrentMonth(
       new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
     );
-  }, [currentMonth]);
+  };
 
-  // Мемоизируем обработчик выбора даты
-  const handleDateSelect = useCallback((date) => {
+  // Выбор даты
+  const handleDateSelect = (date) => {
     if (date) {
       setSelectedDate(date);
-      // Здесь можно добавить логику обновления даты задачи
-      console.log("Выбрана новая дата:", date);
     }
-  }, []);
+  };
 
-  const handleEdit = useCallback(() => {
-    console.log("🔄 Переход в режим редактирования задачи:", actualCardId);
+  const handleClose = () => {
+    setCurrentCard(null);
+    if (onClose) {
+      onClose();
+    } else {
+      navigate(-1);
+    }
+  };
 
-    // Переходим на страницу редактирования
-    navigate(`/task/${actualCardId}/edit`);
-  }, [actualCardId, navigate]);
+  const handleEdit = () => {
 
-  const handleDelete = useCallback(async () => {
+    // Закрываем текущий попап
+    if (onClose) {
+      onClose();
+    }
+
+    // Вызываем функцию редактирования, переданную из родительского компонента
+    if (onEdit && currentCard) {
+      onEdit(currentCard);
+    } else {
+      console.warn("⚠️ Функция onEdit не передана в PopBrowse");
+    }
+  };
+
+  const handleDelete = async () => {
     if (!currentCard) return;
 
     if (!window.confirm("Вы уверены, что хотите удалить эту задачу?")) {
@@ -172,19 +185,7 @@ function PopBrowse({ isOpen, onClose, setRefreshTrigger }) {
 
     setIsDeleting(true);
     try {
-      console.log("🗑️ Удаление задачи:", actualCardId);
-
-      // Удаляем задачу через API
-      await api.deleteTask(actualCardId);
-      console.log("✅ Задача успешно удалена с сервера");
-
-      // Обновляем локальный список задач
-      await loadTasksFromServer();
-
-      // Триггерим обновление в Main.jsx (один запрос)
-      if (setRefreshTrigger) {
-        setRefreshTrigger((prev) => prev + 1);
-      }
+      await deleteTask(actualCardId);
 
       // Закрываем попап
       handleClose();
@@ -194,27 +195,29 @@ function PopBrowse({ isOpen, onClose, setRefreshTrigger }) {
     } finally {
       setIsDeleting(false);
     }
-  }, [currentCard, actualCardId, handleClose, setRefreshTrigger]);
+  };
 
   // Форматирование даты для отображения
-  const formatDate = useCallback((date) => {
+  const formatDate = (date) => {
+    if (!date) return "Не установлен";
     return date.toLocaleDateString("ru-RU", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
     });
-  }, []);
+  };
 
   // Форматирование месяца для отображения
-  const formatMonth = useCallback((date) => {
+  const formatMonth = (date) => {
+    if (!date) return "";
     return date.toLocaleDateString("ru-RU", {
       month: "long",
       year: "numeric",
     });
-  }, []);
+  };
 
-  // Если попап не открыт или не смонтирован, не рендерим его
-  if (!isOpen || !isMounted) return null;
+  // Если попап не открыт, не рендерим его
+  if (!isOpen) return null;
 
   // Если карточка не найдена, но попап открыт, показываем сообщение об ошибке
   if (!currentCard) {
@@ -223,9 +226,9 @@ function PopBrowse({ isOpen, onClose, setRefreshTrigger }) {
         <PopBrowseInner>
           <PopBrowseBlock>
             <PopBrowseContent>
-              <PopBrowseTitle>Ошибка</PopBrowseTitle>
-              <p>Задача не найдена</p>
-              <button onClick={handleClose}>Закрыть</button>
+               <PopBrowseTitle>Загрузка...</PopBrowseTitle>
+              {/*<p>Задача не найдена или еще загружается</p>
+              <button onClick={handleClose}>Закрыть</button> */}
             </PopBrowseContent>
           </PopBrowseBlock>
         </PopBrowseInner>
@@ -234,6 +237,7 @@ function PopBrowse({ isOpen, onClose, setRefreshTrigger }) {
   }
 
   return (
+    // ✅ ИСПРАВЛЕНО: убран проп isOpen из DOM элемента
     <PopBrowseContainer $isOpen={isOpen} id="popBrowse">
       <PopBrowseInner>
         <PopBrowseBlock>

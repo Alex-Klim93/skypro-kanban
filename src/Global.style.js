@@ -16,7 +16,6 @@ export const GlobalStyle = createGlobalStyle`
   a:visited {
     text-decoration: none;
     cursor: pointer;
-    color: inherit;
   }
 
   button,
@@ -74,7 +73,7 @@ export const GlobalStyle = createGlobalStyle`
     --bg-rgb: rgba(255, 255, 255, 1);
     --but-exit-color: #565EEF;
     --bg-shaow: 0px 10px 39px 0px rgba(26, 56, 101, 0.21);
-
+    --butt-darck-color: rgba(86, 94, 239, 1);
   }
 
   /* CSS переменные для темной темы */
@@ -112,6 +111,7 @@ export const GlobalStyle = createGlobalStyle`
     --bg-rgb: rgba(32, 34, 41, 1);
     --bg-shaow: 0px 10px 39px 0px rgba(148, 166, 190, 0.4);
     --but-exit-color: #FFFFFF;
+    --butt-darck-color: rgba(255, 255, 255, 1);
   }
 
   body {
@@ -254,14 +254,14 @@ export const GlobalStyle = createGlobalStyle`
   /* Кнопки */
   ._btn-bor {
     border-radius: 4px;
-    border: 0.7px solid var(--accent-primary);
+    border: 0.7px solid var(--butt-darck-color);
     outline: none;
     background: transparent;
-    color: var(--accent-primary);
+    color: var(--butt-darck-color);
     transition: all 0.3s ease;
   }
   ._btn-bor a {
-    color: var(--accent-primary);
+    color: var(--butt-darck-color);
   }
   ._btn-bor:hover {
     background-color: var(--accent-primary);

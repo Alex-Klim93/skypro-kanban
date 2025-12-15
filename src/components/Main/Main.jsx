@@ -1,5 +1,4 @@
 // Main.jsx
-import { useState, useEffect } from "react";
 import MainColumn from "../MainColumn/MainColumn.jsx";
 import { GlobalStyle } from "../../Global.style.js";
 import {
@@ -10,41 +9,13 @@ import {
   LoadingText,
 } from "./Main.style";
 import { Column, ColumnTitle } from "../MainColumn/MainColumn.style.js";
-import { loadTasksFromServer } from "../../data.js";
-import { authCheck } from "../../api/authCheck.js";
+import { useTaskData } from "../../data.js";
+import { AuthContext } from "../../context/AuthContext";
 
-function Main({ onTaskClick, refreshTrigger, setRefreshTrigger }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [tasks, setTasks] = useState([]);
-  const [error, setError] = useState(null);
+function Main({ onTaskClick }) {
 
-  const loadTasks = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      if (!authCheck.isUserAuthenticated()) {
-        console.log("⚠️ Пользователь не авторизован");
-        setIsLoading(false);
-        return;
-      }
-
-      console.log("🔄 Загрузка задач...");
-      const loadedTasks = await loadTasksFromServer();
-      setTasks(loadedTasks);
-      console.log("✅ Задачи загружены:", loadedTasks.length);
-    } catch (error) {
-      console.error("❌ Ошибка загрузки задач:", error);
-      setError("Не удалось загрузить задачи");
-      setTasks([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadTasks();
-  }, [refreshTrigger]);
+  // ✅ ИСПРАВЛЕНО: используем TaskContext через хук useTaskData
+  const { cardList: tasks, isLoading, error } = useTaskData();
 
   return (
     <>
@@ -70,12 +41,7 @@ function Main({ onTaskClick, refreshTrigger, setRefreshTrigger }) {
               </MainContent>
             ) : (
               <MainContent>
-                <MainColumn
-                  tasks={tasks}
-                  onTaskClick={onTaskClick}
-                  refreshTrigger={refreshTrigger}
-                  setRefreshTrigger={setRefreshTrigger}
-                />
+                <MainColumn tasks={tasks} onTaskClick={onTaskClick} />
               </MainContent>
             )}
           </MainBlock>

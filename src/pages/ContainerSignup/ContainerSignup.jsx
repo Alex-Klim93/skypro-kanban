@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import {
   Container,
   Modal,
@@ -11,28 +11,26 @@ import {
 } from "./ContainerSignup.style.js";
 import { Link, useNavigate } from "react-router-dom";
 import { GlobalStyle } from "../../Global.style.js";
-
-// ✅ ДОБАВЛЕНО: импорт API
-import { api } from "../../api/api.js";
+import { AuthContext } from "../../context/AuthContext";
 
 function ContainerSignup() {
-  // ✅ ДОБАВЛЕНО: состояния для формы
   const [name, setName] = useState("");
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false); // ✅ ДОБАВЛЕНО: состояние успеха
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
-  // ✅ ДОБАВЛЕНО: обработчик отправки формы
+  // Получаем функцию register из контекста
+  const { register } = useContext(AuthContext);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
     setSuccess(false);
 
-    // ✅ ДОБАВЛЕНО: валидация полей
     if (!name || !login || !password) {
       setError("Все поля обязательны для заполнения");
       setIsLoading(false);
@@ -46,30 +44,21 @@ function ContainerSignup() {
     }
 
     try {
-      console.log("📝 Регистрация пользователя:", { name, login, password });
+      // Используем реальную функцию register из AuthContext
+      const result = await register({ login, name, password });
 
-      // ✅ ДОБАВЛЕНО: вызов API регистрации
-      const result = await api.register(login, name, password);
-      console.log("✅ Регистрация успешна:", result);
+      if (result.success) {
+        setSuccess(true);
 
-      // ✅ ИСПРАВЛЕНО: после успешной регистрации показываем сообщение и перенаправляем на вход
-      setSuccess(true);
-
-      // ✅ ДОБАВЛЕНО: через 2 секунды перенаправляем на страницу входа
-      setTimeout(() => {
-        navigate("/sign-in");
-      }, 2000);
+        setTimeout(() => {
+          navigate("/");
+        }, 2000);
+      } else {
+        setError(result.error || "Ошибка регистрации");
+      }
     } catch (err) {
       console.error("❌ Ошибка регистрации:", err);
-
-      // ✅ ДОБАВЛЕНО: обработка ошибок регистрации
-      if (err.message.includes("400")) {
-        setError("Пользователь с таким логином уже существует");
-      } else if (err.message.includes("500")) {
-        setError("Ошибка сервера. Попробуйте позже");
-      } else {
-        setError(err.message || "Ошибка регистрации. Попробуйте снова.");
-      }
+      setError("Ошибка регистрации. Попробуйте снова.");
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +74,6 @@ function ContainerSignup() {
               <h2>Регистрация</h2>
             </ModalTitle>
 
-            {/* ✅ ДОБАВЛЕНО: отображение успешной регистрации */}
             {success && (
               <div
                 style={{
@@ -97,11 +85,10 @@ function ContainerSignup() {
                   borderRadius: "4px",
                 }}
               >
-                ✅ Регистрация успешна! Перенаправляем на страницу входа...
+                ✅ Регистрация успешна! Перенаправляем на главную страницу...
               </div>
             )}
 
-            {/* ✅ ДОБАВЛЕНО: отображение ошибок */}
             {error && !success && (
               <div
                 style={{
@@ -117,7 +104,6 @@ function ContainerSignup() {
               </div>
             )}
 
-            {/* ✅ ИСПРАВЛЕНО: форма скрывается после успешной регистрации */}
             {!success && (
               <Form id="formLogUp" action="#" onSubmit={handleSubmit}>
                 <Input
@@ -136,7 +122,7 @@ function ContainerSignup() {
                   type="text"
                   name="login"
                   id="loginReg"
-                  placeholder="Логин"
+                  placeholder="Эл. почта"
                   value={login}
                   onChange={(e) => setLogin(e.target.value)}
                   disabled={isLoading}

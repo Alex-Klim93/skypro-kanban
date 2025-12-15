@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useNavigate, Outlet, useParams, useLocation } from "react-router-dom";
 import Header from "../../components/Header/Header.jsx";
 import Main from "../../components/Main/Main.jsx";
@@ -9,7 +8,6 @@ import PopNewCard from "../../components/PopNewCard/PopNewCard.jsx";
 import HeaderPopUserSet from "../../components/HeaderPopUserSet/HeaderPopUserSet.jsx";
 
 function MainPage({ onLogout }) {
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams();
@@ -22,11 +20,6 @@ function MainPage({ onLogout }) {
     !location.pathname.includes("/edit");
   const showBrowseEdit = location.pathname.includes("/edit");
   const showUserSettings = location.pathname === "/user-settings";
-
-  // ✅ Функция для обновления списка задач (только один запрос)
-  const handleRefreshTasks = () => {
-    setRefreshTrigger((prev) => prev + 1);
-  };
 
   const handleOpenExit = () => {
     navigate("/exit");
@@ -44,13 +37,15 @@ function MainPage({ onLogout }) {
     navigate("/");
   };
 
+  const handleOpenUserSettings = () => {
+    navigate("/user-settings");
+  };
+
   const handleCloseUserSettings = () => {
     navigate("/");
   };
 
   const handleTaskCreated = () => {
-    console.log("✅ Задача создана, обновляем список");
-    handleRefreshTasks();
     handleCloseNewCard();
   };
 
@@ -67,7 +62,6 @@ function MainPage({ onLogout }) {
   };
 
   const handleCloseBrowseEdit = () => {
-    // Возвращаемся к просмотру задачи или закрываем полностью
     if (params.id) {
       navigate(`/task/${params.id}`);
     } else {
@@ -76,9 +70,6 @@ function MainPage({ onLogout }) {
   };
 
   const handleTaskUpdated = () => {
-    console.log("✅ Задача обновлена, обновляем список");
-    handleRefreshTasks();
-    // Возвращаемся к просмотру задачи после редактирования
     if (params.id) {
       navigate(`/task/${params.id}`);
     }
@@ -86,7 +77,7 @@ function MainPage({ onLogout }) {
 
   return (
     <>
-      {/* Модальные окна, которые рендерятся через роутинг */}
+      {/* Модальные окна */}
       {showExit && (
         <PopExit
           isOpenExit={true}
@@ -107,7 +98,8 @@ function MainPage({ onLogout }) {
         <PopBrowse
           isOpen={true}
           onClose={handleCloseBrowse}
-          setRefreshTrigger={setRefreshTrigger}
+          cardId={params.id}
+          onEdit={handleEditTask}
         />
       )}
 
@@ -115,7 +107,7 @@ function MainPage({ onLogout }) {
         <PopBrowseEdit
           isOpen={true}
           onClose={handleCloseBrowseEdit}
-          setRefreshTrigger={setRefreshTrigger}
+          cardId={params.id}
           onTaskUpdated={handleTaskUpdated}
         />
       )}
@@ -129,14 +121,13 @@ function MainPage({ onLogout }) {
       )}
 
       {/* Основной контент */}
-      <Header onExitClick={handleOpenExit} onAddTaskClick={handleOpenNewCard} />
-      <Main
-        onTaskClick={handleOpenBrowse}
-        refreshTrigger={refreshTrigger}
-        setRefreshTrigger={setRefreshTrigger}
+      <Header
+        onExitClick={handleOpenExit}
+        onAddTaskClick={handleOpenNewCard}
+        onUserSettingsClick={handleOpenUserSettings}
       />
+      <Main onTaskClick={handleOpenBrowse} />
 
-      {/* Outlet для вложенных маршрутов */}
       <Outlet />
     </>
   );

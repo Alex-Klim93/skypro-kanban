@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   PopExitContainer,
   PopExitWrapper,
@@ -10,28 +10,30 @@ import {
   ExitNoButton,
 } from "./PopExit.style";
 import { useNavigate } from "react-router-dom";
-import { api } from "../../api/api.js";
+import { AuthContext } from "../../context/AuthContext.js";
 
-function PopExit({ isOpenExit, onClose, onLogout }) {
+function PopExit({ isOpenExit, onClose }) {
   const navigate = useNavigate();
+  const { logout } = useContext(AuthContext);
 
   const handleLogout = async () => {
     try {
-      api.logout();
+      // Вызываем logout из контекста
+      logout();
 
-      // ✅ ВЫЗЫВАЕМ ФУНКЦИЮ ИЗ APP.JSX
-      if (onLogout) {
-        onLogout();
-      }
-
+      // Перенаправляем на страницу входа
       navigate("/sign-in");
 
+      // Закрываем попап
       if (onClose) {
         onClose();
       }
     } catch (error) {
       console.error("Logout failed:", error);
+
+      // В любом случае перенаправляем на страницу входа
       navigate("/sign-in");
+
       if (onClose) {
         onClose();
       }
@@ -47,7 +49,6 @@ function PopExit({ isOpenExit, onClose, onLogout }) {
   if (!isOpenExit) return null;
 
   return (
-    // ✅ ИСПРАВЛЕНО: используем $isOpen вместо isOpen
     <PopExitContainer $isOpen={isOpenExit}>
       <PopExitWrapper>
         <PopExitBlock>

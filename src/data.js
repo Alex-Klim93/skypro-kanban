@@ -1,62 +1,31 @@
+
 // data.js
-import { api } from "./api/api.js";
+import { useTasks } from "./context/TaskContext";
 
-export let cardList = [];
+// ✅ ИСПРАВЛЕНО: теперь это хук для работы с задачами через контекст
+export function useTaskData() {
+  const {
+    tasks,
+    isLoading,
+    error,
+    loadTasks,
+    addTask,
+    updateTask,
+    deleteTask,
+    refreshTasks,
+  } = useTasks();
 
-export async function loadTasksFromServer() {
-  try {
-    console.log("🔄 Загрузка задач с сервера...");
-    const data = await api.getTasks();
-
-    // Преобразуем данные с сервера
-    cardList = data.tasks.map((task) => ({
-      id: task._id,
-      _id: task._id,
-      userId: task.userId,
-      title: task.title,
-      topic: task.topic,
-      date: task.date, // Оставляем оригинальную дату в ISO формате
-      description: task.description,
-      status: task.status, // ✅ Сохраняем актуальный статус из API
-      themeClass: getThemeClass(task.topic),
-      // Добавляем отформатированную дату только для отображения
-      formattedDate: formatDateForDisplay(task.date),
-    }));
-
-    console.log(
-      "✅ Задачи загружены со статусами:",
-      cardList.map((task) => ({
-        title: task.title,
-        status: task.status,
-      }))
-    );
-    return cardList;
-  } catch (error) {
-    console.error("❌ Ошибка загрузки задач:", error);
-    cardList = [];
-    return cardList;
-  }
-}
-
-// Функция для форматирования даты только для отображения
-function formatDateForDisplay(dateString) {
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ru-RU", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  } catch (error) {
-    return dateString;
-  }
-}
-
-function getThemeClass(topic) {
-  const themeMap = {
-    "Web Design": "_orange",
-    Research: "_green",
-    Copywriting: "_purple",
+  return {
+    cardList: tasks,
+    isLoading,
+    error,
+    loadTasksFromServer: loadTasks,
+    addTaskToServer: addTask,
+    updateTaskOnServer: updateTask,
+    deleteTaskFromServer: deleteTask,
+    refreshTasks,
   };
-  return themeMap[topic] || "_gray";
 }
+
+// ✅ Сохраняем глобальную переменную для обратной совместимости
+export let cardList = [];
