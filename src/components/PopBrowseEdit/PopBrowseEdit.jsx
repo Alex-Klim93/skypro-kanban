@@ -151,7 +151,6 @@ function PopBrowseEdit({ isOpen, onClose, cardId, onTaskUpdated }) {
 
     setIsSaving(true);
     try {
-
       const updatedTaskData = {
         title: title,
         topic: topic,
@@ -216,7 +215,7 @@ function PopBrowseEdit({ isOpen, onClose, cardId, onTaskUpdated }) {
   if (!isOpen || !currentCard) return null;
 
   return (
-    <PopBrowseContainer isOpen={isOpen} id="popBrowseEdit">
+    <PopBrowseContainer $isOpen={isOpen} id="popBrowseEdit">
       <PopBrowseInner>
         <PopBrowseBlock>
           <PopBrowseContent>

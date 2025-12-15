@@ -226,9 +226,9 @@ function PopBrowse({ isOpen, onClose, cardId, onEdit }) {
         <PopBrowseInner>
           <PopBrowseBlock>
             <PopBrowseContent>
-              <PopBrowseTitle>Ошибка</PopBrowseTitle>
-              <p>Задача не найдена или еще загружается</p>
-              <button onClick={handleClose}>Закрыть</button>
+               <PopBrowseTitle>Загрузка...</PopBrowseTitle>
+              {/*<p>Задача не найдена или еще загружается</p>
+              <button onClick={handleClose}>Закрыть</button> */}
             </PopBrowseContent>
           </PopBrowseBlock>
         </PopBrowseInner>

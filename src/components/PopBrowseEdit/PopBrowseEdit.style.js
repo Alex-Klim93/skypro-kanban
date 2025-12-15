@@ -3,7 +3,7 @@ import styled from "styled-components";
 // Основной контейнер попапа
 export const PopBrowseContainer = styled.div`
   display: ${(props) =>
-    props.isOpen ? "block" : "none"}; // Изменяем на управление через пропсы
+    props.$isOpen ? "block" : "none"}; // Используем $isOpen вместо isOpen
   width: 100%;
   height: 100%;
   min-width: 375px;
@@ -101,7 +101,6 @@ export const PopBrowseTitle = styled.h3`
   }
 `;
 
-
 // Обертка для формы и календаря
 export const PopBrowseWrap = styled.div`
   display: flex;
@@ -184,10 +183,8 @@ export const StatusThemes = styled.div`
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: flex-start;
-  gap:7px;
+  gap: 7px;
 `;
-
-
 
 // Тема статуса
 export const StatusTheme = styled.div`
@@ -528,12 +525,12 @@ export const GrayTheme = styled.div`
   padding: 10px 14px 10px 14px;
   background: rgba(148, 166, 190, 1);
   border-radius: 24px;
-    color: rgba(255, 255, 255, 1);
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 10px;
-    letter-spacing: 0%;
-    text-align: center;
+  color: rgba(255, 255, 255, 1);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 10px;
+  letter-spacing: 0%;
+  text-align: center;
 `;
 
 export const ActiveCategory = styled.div`

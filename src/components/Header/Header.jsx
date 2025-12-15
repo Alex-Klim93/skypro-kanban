@@ -17,6 +17,7 @@ import { AuthContext } from "../../context/AuthContext";
 function Header({ onExitClick, onAddTaskClick, onUserSettingsClick }) {
   const [userDisplayName, setUserDisplayName] = useState("Пользователь");
   const [userButtonRect, setUserButtonRect] = useState(null);
+  const [logoError, setLogoError] = useState({ light: false, dark: false });
   const navigate = useNavigate();
   const location = useLocation();
   const userButtonRef = useRef(null);
@@ -26,7 +27,6 @@ function Header({ onExitClick, onAddTaskClick, onUserSettingsClick }) {
 
   // Обновление данных пользователя
   useEffect(() => {
-
     if (user && user.name) {
       setUserDisplayName(user.name);
     } else if (user && user.login) {
@@ -54,7 +54,6 @@ function Header({ onExitClick, onAddTaskClick, onUserSettingsClick }) {
     if (onUserSettingsClick) {
       onUserSettingsClick();
     } else {
-      // Fallback: навигация напрямую
       navigate("/user-settings");
     }
   };
@@ -65,7 +64,6 @@ function Header({ onExitClick, onAddTaskClick, onUserSettingsClick }) {
     }
   };
 
-  // Обновляем позицию при изменении размера окна
   useEffect(() => {
     const handleResize = () => {
       if (location.pathname === "/user-settings") {
@@ -77,13 +75,26 @@ function Header({ onExitClick, onAddTaskClick, onUserSettingsClick }) {
     return () => window.removeEventListener("resize", handleResize);
   }, [location.pathname]);
 
-  // Определяем, открыты ли настройки пользователя для подсветки кнопки
   const isUserSettingsOpen = location.pathname === "/user-settings";
+
+  // Обработчики ошибок загрузки изображений
+  const handleLightLogoError = () => {
+    console.log("Light logo failed to load, using fallback");
+    setLogoError(prev => ({ ...prev, light: true }));
+  };
+
+  const handleDarkLogoError = () => {
+    console.log("Dark logo failed to load, using fallback");
+    setLogoError(prev => ({ ...prev, dark: true }));
+  };
+
+  // Определяем, какой логотип показывать
+  const shouldShowLightLogo = !isDarkTheme && !logoError.light;
+  const shouldShowDarkLogo = isDarkTheme && !logoError.dark;
 
   return (
     <>
       <GlobalStyle />
-      {/* ✅ ДОБАВЛЕНА ОБЕРТКА С ОТНОСИТЕЛЬНЫМ ПОЗИЦИОНИРОВАНИЕМ */}
       <div style={{ position: "relative" }}>
         <HeaderStyle>
           <HeaderStyleContainer>
@@ -91,22 +102,125 @@ function Header({ onExitClick, onAddTaskClick, onUserSettingsClick }) {
               {/* Логотип для светлой темы */}
               <HeaderLogo
                 className={!isDarkTheme ? "_show _light" : "_light"}
-                style={{ display: !isDarkTheme ? "block" : "none" }}
+                style={{ 
+                  display: shouldShowLightLogo ? "block" : "none",
+                  width: "124px",
+                  height: "40px"
+                }}
               >
-                <a href="" target="_self">
-                  <img src="images/logo.png" alt="logo" />
+                <a 
+                  href="/" 
+                  target="_self"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/");
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    height: "100%",
+                    textDecoration: "none"
+                  }}
+                >
+                  {shouldShowLightLogo ? (
+                    <img 
+                      src="/images/logo.png" 
+                      alt="TaskMaster Logo" 
+                      onError={handleLightLogoError}
+                      style={{
+                        maxWidth: "100%",
+                        maxHeight: "100%",
+                        objectFit: "contain"
+                      }}
+                    />
+                  ) : (
+                    <div style={{
+                      color: "#333",
+                      fontSize: "18px",
+                      fontWeight: "bold",
+                      fontFamily: "'Roboto', sans-serif"
+                    }}>
+                      TaskMaster
+                    </div>
+                  )}
                 </a>
               </HeaderLogo>
 
               {/* Логотип для темной темы */}
               <HeaderLogo
                 className={isDarkTheme ? "_show _dark" : "_dark"}
-                style={{ display: isDarkTheme ? "block" : "none" }}
+                style={{ 
+                  display: shouldShowDarkLogo ? "block" : "none",
+                  width: "124px",
+                  height: "40px"
+                }}
               >
-                <a href="" target="_self">
-                  <img src="images/logo_dark.png" alt="logo" />
+                <a 
+                  href="/" 
+                  target="_self"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/");
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    height: "100%",
+                    textDecoration: "none"
+                  }}
+                >
+                  {shouldShowDarkLogo ? (
+                    <img 
+                      src="/images/logo_dark.png" 
+                      alt="TaskMaster Logo" 
+                      onError={handleDarkLogoError}
+                      style={{
+                        maxWidth: "100%",
+                        maxHeight: "100%",
+                        objectFit: "contain"
+                      }}
+                    />
+                  ) : (
+                    <div style={{
+                      color: "#fff",
+                      fontSize: "18px",
+                      fontWeight: "bold",
+                      fontFamily: "'Roboto', sans-serif"
+                    }}>
+                      TaskMaster
+                    </div>
+                  )}
                 </a>
               </HeaderLogo>
+
+              {/* Fallback логотип (текстовый) */}
+              {(logoError.light || logoError.dark || (!shouldShowLightLogo && !shouldShowDarkLogo)) && (
+                <div style={{
+                  width: "124px",
+                  height: "40px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}>
+                  <a 
+                    href="/" 
+                    target="_self"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/");
+                    }}
+                    style={{
+                      textDecoration: "none",
+                      color: isDarkTheme ? "#fff" : "#333",
+                      fontSize: "18px",
+                      fontWeight: "bold",
+                      fontFamily: "'Roboto', sans-serif"
+                    }}
+                  >
+                    TaskMaster
+                  </a>
+                </div>
+              )}
 
               <HeaderNav>
                 <HeaderButton
@@ -135,7 +249,6 @@ function Header({ onExitClick, onAddTaskClick, onUserSettingsClick }) {
           </HeaderStyleContainer>
         </HeaderStyle>
 
-        {/* ✅ ПЕРЕМЕЩЕНО ВНУТРЬ HEADER ДЛЯ КОРРЕКТНОГО ПОЗИЦИОНИРОВАНИЯ */}
         {isUserSettingsOpen && (
           <HeaderPopUserSet
             isOpen={true}

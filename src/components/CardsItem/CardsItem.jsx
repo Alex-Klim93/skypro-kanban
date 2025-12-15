@@ -1,4 +1,3 @@
-// CardsItem.jsx
 import React, { useState } from "react";
 import { GlobalStyle } from "../../Global.style.js";
 import {
@@ -21,7 +20,7 @@ import {
 const CardsItem = ({ card, onTaskClick, isBeingDragged = false }) => {
   const [isDragging, setIsDragging] = useState(false);
   // Состояние для отслеживания наведения курсора и удерживания ЛКМ
-  const [ setIsHoveredWithLMB] = useState(false);
+  const [isHoveredWithLMB, setIsHoveredWithLMB] = useState(false); // ← ИСПРАВЛЕНО
 
   // Обработчик клика по карточке
   const handleCardClick = (e) => {
@@ -81,93 +80,91 @@ const CardsItem = ({ card, onTaskClick, isBeingDragged = false }) => {
 
   return (
     <>
-    <GlobalStyle />
-    <CardsItemContainer
-      onClick={handleCardClick}
-      // Добавляем обработчики мыши
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      style={{
-        cursor: isDragging ? "grabbing" : "grab",
-        // Убираем display: "none" - скрытие управляется из MainColumn
-        opacity: isBeingDragged ? 0 : 1,
-        visibility: isBeingDragged ? "hidden" : "visible",
-        transition: "opacity 0.2s ease",
-      }}
-      draggable
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <Card>
-        <CardGroup>
-          {/* ✅ ИСПРАВЛЕНО: убран проп $themeClass из DOM элемента */}
-          <CardTheme
-            className={`card__theme ${card.themeClass}`}
-          >
-            <CardThemeText className={card.themeClass}>
-              {card.topic}
-            </CardThemeText>
-          </CardTheme>
+      <GlobalStyle />
+      <CardsItemContainer
+        onClick={handleCardClick}
+        // Добавляем обработчики мыши
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        style={{
+          cursor: isDragging ? "grabbing" : "grab",
+          // Убираем display: "none" - скрытие управляется из MainColumn
+          opacity: isBeingDragged ? 0 : 1,
+          visibility: isBeingDragged ? "hidden" : "visible",
+          transition: "opacity 0.2s ease",
+        }}
+        draggable
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <Card>
+          <CardGroup>
+            {/* ✅ ИСПРАВЛЕНО: убран проп $themeClass из DOM элемента */}
+            <CardTheme className={`card__theme ${card.themeClass}`}>
+              <CardThemeText className={card.themeClass}>
+                {card.topic}
+              </CardThemeText>
+            </CardTheme>
 
-          <CardButton
-            href="#popBrowse"
-            target="_self"
-            onClick={handleButtonClick}
-          >
-            <CardButtonInner className="card__btn">
-              <CardButtonDot></CardButtonDot>
-              <CardButtonDot></CardButtonDot>
-              <CardButtonDot></CardButtonDot>
-            </CardButtonInner>
-          </CardButton>
-        </CardGroup>
-
-        <CardContent>
-          <CardTitleLink
-            href=""
-            target="_blank"
-            onClick={(e) => e.preventDefault()}
-          >
-            <CardTitle>{card.title}</CardTitle>
-          </CardTitleLink>
-
-          <CardDate>
-            <CalendarIcon
-              xmlns="http://www.w3.org/2000/svg"
-              width="13"
-              height="13"
-              viewBox="0 0 13 13"
-              fill="none"
+            <CardButton
+              href="#popBrowse"
+              target="_self"
+              onClick={handleButtonClick}
             >
-              <g clipPath="url(#clip0_1_415)">
-                <path
-                  d="M10.5625 2.03125H2.4375C1.7644 2.03125 1.21875 2.5769 1.21875 3.25V10.5625C1.21875 11.2356 1.7644 11.7812 2.4375 11.7812H10.5625C11.2356 11.7812 11.7812 11.2356 11.7812 10.5625V3.25C11.7812 2.5769 11.2356 2.03125 10.5625 2.03125Z"
-                  stroke="#94A6BE"
-                  strokeWidth="0.8"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M11.7812 4.0625H1.21875M3.25 1.21875V2.03125V1.21875ZM9.75 1.21875V2.03125V1.21875Z"
-                  stroke="#94A6BE"
-                  strokeWidth="0.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </g>
-              <defs>
-                <clipPath id="clip0_1_415">
-                  <rect width="13" height="13" fill="white" />
-                </clipPath>
-              </defs>
-            </CalendarIcon>
-            {/* Используем formattedDate для отображения */}
-            <DateText>{card.formattedDate || card.date}</DateText>
-          </CardDate>
-        </CardContent>
-      </Card>
-    </CardsItemContainer>
+              <CardButtonInner className="card__btn">
+                <CardButtonDot></CardButtonDot>
+                <CardButtonDot></CardButtonDot>
+                <CardButtonDot></CardButtonDot>
+              </CardButtonInner>
+            </CardButton>
+          </CardGroup>
+
+          <CardContent>
+            <CardTitleLink
+              href=""
+              target="_blank"
+              onClick={(e) => e.preventDefault()}
+            >
+              <CardTitle>{card.title}</CardTitle>
+            </CardTitleLink>
+
+            <CardDate>
+              <CalendarIcon
+                xmlns="http://www.w3.org/2000/svg"
+                width="13"
+                height="13"
+                viewBox="0 0 13 13"
+                fill="none"
+              >
+                <g clipPath="url(#clip0_1_415)">
+                  <path
+                    d="M10.5625 2.03125H2.4375C1.7644 2.03125 1.21875 2.5769 1.21875 3.25V10.5625C1.21875 11.2356 1.7644 11.7812 2.4375 11.7812H10.5625C11.2356 11.7812 11.7812 11.2356 11.7812 10.5625V3.25C11.7812 2.5769 11.2356 2.03125 10.5625 2.03125Z"
+                    stroke="#94A6BE"
+                    strokeWidth="0.8"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M11.7812 4.0625H1.21875M3.25 1.21875V2.03125V1.21875ZM9.75 1.21875V2.03125V1.21875Z"
+                    stroke="#94A6BE"
+                    strokeWidth="0.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_1_415">
+                    <rect width="13" height="13" fill="white" />
+                  </clipPath>
+                </defs>
+              </CalendarIcon>
+              {/* Используем formattedDate для отображения */}
+              <DateText>{card.formattedDate || card.date}</DateText>
+            </CardDate>
+          </CardContent>
+        </Card>
+      </CardsItemContainer>
     </>
   );
 };

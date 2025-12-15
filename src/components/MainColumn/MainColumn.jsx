@@ -1,4 +1,3 @@
-// MainColumn.jsx
 import { useState, useContext } from "react";
 import CardsItem from "../CardsItem/CardsItem.jsx";
 import { Column, ColumnTitle, CardsContainer } from "./MainColumn.style.js";
@@ -16,7 +15,7 @@ function MainColumn({ onTaskClick }) {
   ];
 
   const [draggedTask, setDraggedTask] = useState(null);
-  const [setDragOverColumn] = useState(null);
+  const [dragOverColumn, setDragOverColumn] = useState(null);
 
   const handleDragStart = (e, task) => {
     setDraggedTask(task);
@@ -56,7 +55,6 @@ function MainColumn({ onTaskClick }) {
         description: draggedTask.description,
         date: draggedTask.date,
       };
-
 
       // Обновляем задачу через контекст
       await updateTask(draggedTask.id, updatedTaskData);
@@ -116,10 +114,6 @@ function MainColumn({ onTaskClick }) {
             onDragOver={(e) => handleDragOver(e, status)}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, status)}
-            style={{
-              minWidth: "220px",
-              backgroundColor: "transparent",
-            }}
           >
             <ColumnTitle>
               <p>

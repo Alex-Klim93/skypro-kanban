@@ -4,7 +4,6 @@ import {
   Modal,
   ModalBlock,
   ModalTitle,
-  Form,
   Input,
   Button,
   FormGroup,
@@ -16,39 +15,62 @@ import { AuthContext } from "../../context/AuthContext";
 function ContainerSignin() {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { login: authLogin } = useContext(AuthContext);
 
-  const handleSubmit = async () => {
-    // 1. УБИРАЕМ ВСЕ preventDefault - пусть форма ведет себя как обычно
-    // e.preventDefault(); // УБИРАЕМ ЭТУ СТРОЧКУ
-
-    if (isLoading) return;
-
-    setError("");
-
-    // Проверка полей
-    if (!login.trim()) {
-      setError("Введите логин");
-      return;
+  const handleSubmit = async (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
     }
 
-    if (!password.trim()) {
+    // ✅ Проверка на пустые поля с раздельными сообщениями
+    if (!login.trim() && !password.trim()) {
+      setError("Введите логин и пароль");
+      return;
+    }else if (!login.trim()) {
+      setError("Введите логин");
+      return;
+    }else if (!password.trim()) {
       setError("Введите пароль");
       return;
     }
 
+    // Сбрасываем ошибки
+    setError("");
     setIsLoading(true);
 
     try {
-      const result = await authLogin({ login, password });
-      setError(result.error || "Неверный логин или пароль");
+      // Вызываем функцию логина из контекста
+      const result = await authLogin({
+        login: login.trim(),
+        password: password.trim(),
+      });
+
+      // ✅ ИСПРАВЛЕНА ПРОВЕРКА ОШИБОК
+      if (result && !result.success) {
+        const errorMessage = result.error || "Неверный логин или пароль";
+        if (errorMessage.toLowerCase().includes("логин")) {
+          setError("Неверный логин");
+        } else if (errorMessage.toLowerCase().includes("пароль")) {
+          setError("Неверный пароль");
+        } else {
+          setError(errorMessage);
+        }
+      }
     } catch (err) {
-      console.error("Ошибка:", err);
+      console.error("Ошибка при входе:", err);
       setError("Ошибка соединения с сервером");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Обработчик нажатия клавиши Enter
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleSubmit(e);
     }
   };
 
@@ -62,57 +84,66 @@ function ContainerSignin() {
               <h2>Вход</h2>
             </ModalTitle>
 
-            {error && (
-              <div
-                style={{
-                  color: "red",
-                  textAlign: "center",
-                  marginBottom: "15px",
-                  padding: "10px",
-                  backgroundColor: "#ffe6e6",
-                  borderRadius: "4px",
-                  fontSize: "14px",
-                }}
-              >
-                {error}
-              </div>
-            )}
-
-            {/* УБИРАЕМ onSubmit у формы */}
-            <Form>
+            <div>
               <Input
                 type="text"
-                name="login"
-                id="formlogin"
                 placeholder="Логин"
                 value={login}
-                onChange={(e) => setLogin(e.target.value)}
+                onChange={(e) => {
+                  setLogin(e.target.value);
+                  // Сбрасываем ошибку при изменении логина
+                  if (error && error.includes("логин")) {
+                    setError("");
+                  }
+                }}
                 disabled={isLoading}
+                style={{ marginBottom: "14px", width: "100%" }}
               />
               <Input
                 type="password"
-                name="password"
-                id="formpassword"
                 placeholder="Пароль"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  // Сбрасываем ошибку при изменении пароля
+                  if (error && error.includes("пароль")) {
+                    setError("");
+                  }
+                }}
+                onKeyPress={handleKeyPress}
                 disabled={isLoading}
+                style={{ marginBottom: "4px", width: "100%" }}
               />
-              {/* МЕНЯЕМ type на "button" и добавляем onClick */}
+
+              {/* Отображение ошибки под полем пароля */}
+              {error && (
+                <div
+                  style={{
+                    color: "#ff0000",
+                    fontSize: "12px",
+                    marginBottom: "8px",
+                    paddingLeft: "4px",
+                  }}
+                >
+                  {error}
+                </div>
+              )}
+
               <Button
                 className="_hover01"
-                id="btnEnter"
-                type="button" // МЕНЯЕМ на button
+                type="button"
+                onClick={handleSubmit}
                 disabled={isLoading}
-                onClick={handleSubmit} // Добавляем обработчик
+                style={{ width: "100%", marginTop: "20px" }}
               >
-                {isLoading ? "Вход..." : "Войти"}
+                {isLoading ? "Проверка..." : "Войти"}
               </Button>
-              <FormGroup>
+
+              <FormGroup style={{ marginTop: "20px" }}>
                 <p>Нужно зарегистрироваться?</p>
                 <Link to="/sign-up">Регистрируйтесь здесь</Link>
               </FormGroup>
-            </Form>
+            </div>
           </ModalBlock>
         </Modal>
       </Container>

@@ -6,30 +6,53 @@ export const TaskProvider = ({ children }) => {
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { user, makeRequest, logout } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
 
   const KANBAN_API_BASE_URL = "https://wedev-api.sky.pro/api/kanban";
 
   // Референсы для предотвращения бесконечных циклов
   const isInitialLoadRef = useRef(false);
+  
+  // Кэш для отслеживания обновлений (чтобы не спамить сервер)
+  const updateCacheRef = useRef(new Map());
+  const updateTimeoutRef = useRef(null);
 
-  // Функция для выполнения запросов задач
+  // ✅ ИСПРАВЛЕНО: Создаем собственную функцию для запросов
   const makeTaskRequest = async (url, options = {}) => {
-    try {
-      const response = await makeRequest(url, options);
-      return response;
-    } catch (error) {
-      console.error("Task API request failed:", error);
+    const token = localStorage.getItem("userToken");
 
-      // Если ошибка авторизации - разлогиниваем пользователя
-      if (
-        error.message.includes("401") ||
-        error.message.includes("400") ||
-        error.message.includes("Неверный")
-      ) {
-        logout();
+    if (!token) {
+      throw new Error("Пользователь не авторизован");
+    }
+
+    const config = {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...options.headers,
+      },
+    };
+
+    if (options.body && typeof options.body !== "string") {
+      config.body = JSON.stringify(options.body);
+    }
+
+    try {
+      const response = await fetch(url, config);
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          logout();
+          throw new Error("Сессия истекла. Пожалуйста, войдите снова.");
+        }
+
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Ошибка ${response.status}`);
       }
 
+      return await response.json();
+    } catch (error) {
+      console.error("Task API request failed:", error);
       throw error;
     }
   };
@@ -81,12 +104,12 @@ export const TaskProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.token, isLoading, makeTaskRequest]);
+  }, [user?.token, isLoading, logout]);
 
-  // Добавление задачи - согласно документации
+  // ✅ ИСПРАВЛЕНО: Добавление задачи - согласно документации
   const addTask = async (taskData) => {
     try {
-      // Согласно документации: POST /api/kanban
+      // Согласно документации: POST /api/kanban возвращает { tasks: [...] }
       const data = await makeTaskRequest(KANBAN_API_BASE_URL, {
         method: "POST",
         body: {
@@ -98,21 +121,26 @@ export const TaskProvider = ({ children }) => {
         },
       });
 
-      // Вместо полной перезагрузки, добавляем задачу локально
-      const newTask = {
-        id: data._id || data.id,
-        _id: data._id || data.id,
-        userId: data.userId,
-        title: data.title,
-        topic: data.topic,
-        date: data.date,
-        description: data.description,
-        status: data.status,
-        themeClass: getThemeClass(data.topic),
-        formattedDate: formatDateForDisplay(data.date),
-      };
+      // ✅ ИСПРАВЛЕНО: Сервер возвращает обновлённый список задач, а не только созданную
+      if (!data.tasks) {
+        throw new Error("Неверный ответ от сервера");
+      }
 
-      setTasks((prev) => [...prev, newTask]);
+      const formattedTasks = data.tasks.map((task) => ({
+        id: task._id,
+        _id: task._id,
+        userId: task.userId,
+        title: task.title,
+        topic: task.topic,
+        date: task.date,
+        description: task.description,
+        status: task.status,
+        themeClass: getThemeClass(task.topic),
+        formattedDate: formatDateForDisplay(task.date),
+      }));
+
+      // ✅ Обновляем весь список задач с тем, что вернул сервер
+      setTasks(formattedTasks);
       return data;
     } catch (err) {
       console.error("❌ Ошибка добавления задачи:", err);
@@ -120,52 +148,92 @@ export const TaskProvider = ({ children }) => {
     }
   };
 
-  // Обновление задачи - согласно документации
+  // Обновление задачи - согласно документации (с дебаунсом)
   const updateTask = async (id, taskData) => {
-    try {
-      // Согласно документации: PUT /api/kanban/:id
-      const data = await makeTaskRequest(`${KANBAN_API_BASE_URL}/${id}`, {
-        method: "PUT",
-        body: {
-          title: taskData.title,
-          topic: taskData.topic,
-          status: taskData.status,
-          description: taskData.description,
-          date: taskData.date,
-        },
-      });
-
-      // Обновляем задачу локально
-      setTasks((prev) =>
-        prev.map((task) =>
-          task.id === id
-            ? {
-                ...task,
-                ...taskData,
-                themeClass: getThemeClass(taskData.topic),
-                formattedDate: formatDateForDisplay(taskData.date),
-              }
-            : task
-        )
-      );
-
-      return data;
-    } catch (err) {
-      console.error("❌ Ошибка обновления задачи:", err);
-      throw err;
+    // Сохраняем в кэш
+    updateCacheRef.current.set(id, { ...taskData, timestamp: Date.now() });
+    
+    // Очищаем предыдущий таймаут
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
     }
+    
+    // Устанавливаем новый таймаут для отправки на сервер
+    updateTimeoutRef.current = setTimeout(async () => {
+      const updates = Array.from(updateCacheRef.current.entries());
+      updateCacheRef.current.clear();
+      
+      // Отправляем все накопленные обновления
+      for (const [taskId, data] of updates) {
+        try {
+          // Согласно документации: PUT /api/kanban/:id возвращает { tasks: [...] }
+          const response = await makeTaskRequest(`${KANBAN_API_BASE_URL}/${taskId}`, {
+            method: "PUT",
+            body: {
+              title: data.title,
+              topic: data.topic,
+              status: data.status,
+              description: data.description,
+              date: data.date,
+            },
+          });
+
+          // ✅ ИСПРАВЛЕНО: Сервер возвращает обновлённый список задач
+          if (!response.tasks) {
+            throw new Error("Неверный ответ от сервера");
+          }
+
+          const formattedTasks = response.tasks.map((task) => ({
+            id: task._id,
+            _id: task._id,
+            userId: task.userId,
+            title: task.title,
+            topic: task.topic,
+            date: task.date,
+            description: task.description,
+            status: task.status,
+            themeClass: getThemeClass(task.topic),
+            formattedDate: formatDateForDisplay(task.date),
+          }));
+
+          // ✅ Обновляем весь список задач с тем, что вернул сервер
+          setTasks(formattedTasks);
+        } catch (err) {
+          console.error(`❌ Ошибка обновления задачи ${taskId}:`, err);
+          // Не бросаем ошибку дальше, чтобы не прерывать UI
+        }
+      }
+    }, 300); // Задержка 300ms для группировки обновлений
   };
 
   // Удаление задачи - согласно документации
   const deleteTask = async (id) => {
     try {
-      // Согласно документации: DELETE /api/kanban/:id
+      // Согласно документации: DELETE /api/kanban/:id возвращает { tasks: [...] }
       const data = await makeTaskRequest(`${KANBAN_API_BASE_URL}/${id}`, {
         method: "DELETE",
       });
 
-      // Удаляем задачу локально
-      setTasks((prev) => prev.filter((task) => task.id !== id));
+      // ✅ ИСПРАВЛЕНО: Сервер возвращает обновлённый список задач
+      if (!data.tasks) {
+        throw new Error("Неверный ответ от сервера");
+      }
+
+      const formattedTasks = data.tasks.map((task) => ({
+        id: task._id,
+        _id: task._id,
+        userId: task.userId,
+        title: task.title,
+        topic: task.topic,
+        date: task.date,
+        description: task.description,
+        status: task.status,
+        themeClass: getThemeClass(task.topic),
+        formattedDate: formatDateForDisplay(task.date),
+      }));
+
+      // ✅ Обновляем весь список задач с тем, что вернул сервер
+      setTasks(formattedTasks);
       return data;
     } catch (err) {
       console.error("❌ Ошибка удаления задачи:", err);
@@ -202,6 +270,15 @@ export const TaskProvider = ({ children }) => {
       isInitialLoadRef.current = false;
     }
   }, [user?.token]);
+
+  // Очистка таймаута при размонтировании
+  useEffect(() => {
+    return () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const value = {
     tasks,

@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 const ThemeContext = createContext();
 
-// Переименуем хук, чтобы избежать конфликта
 export const useThemeContext = () => {
   const context = useContext(ThemeContext);
   if (!context) {
@@ -12,30 +11,57 @@ export const useThemeContext = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [isDarkTheme, setIsDarkTheme] = useState(() => {
-    const savedTheme = localStorage.getItem("theme");
-    return (
-      savedTheme === "dark" ||
-      (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches)
-    );
-  });
+  const [isThemeLoaded, setIsThemeLoaded] = useState(false);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem("theme", isDarkTheme ? "dark" : "light");
+    // Синхронно загружаем тему из localStorage
+    const savedTheme = localStorage.getItem("theme");
+    let initialTheme = false;
+    
+    if (savedTheme) {
+      initialTheme = savedTheme === "dark";
+    } else if (window.matchMedia) {
+      initialTheme = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+    
+    setIsDarkTheme(initialTheme);
+    
+    // Синхронно применяем тему к document
+    if (initialTheme) {
+      document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+    }
+    
+    // Устанавливаем флаг загрузки в следующем цикле событий
+    requestAnimationFrame(() => {
+      setIsThemeLoaded(true);
+    });
+  }, []);
 
+  useEffect(() => {
+    if (!isThemeLoaded) return;
+
+    localStorage.setItem("theme", isDarkTheme ? "dark" : "light");
+    
     if (isDarkTheme) {
       document.documentElement.setAttribute("data-theme", "dark");
     } else {
       document.documentElement.removeAttribute("data-theme");
     }
-  }, [isDarkTheme]);
+  }, [isDarkTheme, isThemeLoaded]);
 
   const toggleTheme = () => {
     setIsDarkTheme((prev) => !prev);
   };
 
   return (
-    <ThemeContext.Provider value={{ isDarkTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ 
+      isDarkTheme, 
+      toggleTheme,
+      isThemeLoaded 
+    }}>
       {children}
     </ThemeContext.Provider>
   );

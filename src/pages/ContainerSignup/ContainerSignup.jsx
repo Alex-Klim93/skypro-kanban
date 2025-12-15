@@ -44,7 +44,6 @@ function ContainerSignup() {
     }
 
     try {
-
       // Используем реальную функцию register из AuthContext
       const result = await register({ login, name, password });
 
@@ -123,7 +122,7 @@ function ContainerSignup() {
                   type="text"
                   name="login"
                   id="loginReg"
-                  placeholder="Логин"
+                  placeholder="Эл. почта"
                   value={login}
                   onChange={(e) => setLogin(e.target.value)}
                   disabled={isLoading}
